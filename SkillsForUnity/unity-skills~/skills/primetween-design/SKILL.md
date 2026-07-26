@@ -1,9 +1,15 @@
 ---
 name: unity-primetween-design
-description: Source-anchored design rules for PrimeTween 1.4.6 — factory tweens, non-reusable handles, sequences, cycles, callbacks, cancellation, async/coroutine waiting, and configuration. Use when writing or reviewing PrimeTween animation code or diagnosing its lifecycle behavior. 为 PrimeTween 1.4.6 提供源码锚定的设计规则(工厂补间、不可复用句柄、序列、循环、回调、取消、异步/协程等待与配置);当用户编写或审查 PrimeTween 动画代码、或诊断其生命周期行为时使用。
+description: "Source-anchored design rules for PrimeTween 1.4.6 — factory tweens, non-reusable handles, sequences, cycles, callbacks, cancellation, async/coroutine waiting, and configuration. Use when writing or reviewing PrimeTween animation code or diagnosing its lifecycle behavior. 为 PrimeTween 1.4.6 提供源码锚定的设计规则(工厂补间、不可复用句柄、序列、循环、回调、取消、异步/协程等待与配置);当用户编写或审查 PrimeTween 动画代码、或诊断其生命周期行为时使用。 VI: thiết kế PrimeTween: factory tween, handle không tái dùng, sequence Chain/Group/Insert, cycles, callback, lifetime, config. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # PrimeTween - Design Rules
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `thiết kế PrimeTween: factory tween, handle không tái dùng, sequence Chain/Group/Insert, cycles, callback, lifetime, config`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Advisory module. Rules are grounded in the PrimeTween **1.4.6** package installed through `com.kyrylokuzyk.primetween`.
 

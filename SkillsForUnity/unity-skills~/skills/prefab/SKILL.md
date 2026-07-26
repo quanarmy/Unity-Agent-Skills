@@ -1,28 +1,36 @@
 ---
 name: unity-prefab
-description: Manage Prefabs — create, instantiate, apply overrides, unpack, find instances, edit prefab assets, and create variants. Use when working with prefabs, instantiating or applying prefab changes, finding instances in scenes, or creating prefab variants, even if the user just says "做成预制体" or "prefab". 管理 Prefab(创建、实例化、应用覆盖、解包、查找实例、编辑预制体资产、创建变体);当用户要处理预制体、实例化或应用预制体改动、在场景中查找实例、或创建预制体变体时使用。
+description: "Manage Prefabs — create, instantiate, apply overrides, unpack, find instances, edit prefab assets, and create variants. Use when working with prefabs, instantiating or applying prefab changes, finding instances in scenes, or creating prefab variants, even if the user just says \"做成预制体\" or \"prefab\". 管理 Prefab(创建、实例化、应用覆盖、解包、查找实例、编辑预制体资产、创建变体);当用户要处理预制体、实例化或应用预制体改动、在场景中查找实例、或创建预制体变体时使用。 VI: prefab: tạo prefab, instantiate prefab, apply/revert override, variant, tìm instance. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Prefab Skills
 
-> **BATCH-FIRST**: Use `prefab_instantiate_batch` when spawning 2+ prefab instances.
+## Ghi chú tiếng Việt cho agent
 
-## Operating Mode
+- Khi user nói tiếng Việt như: `prefab: tạo prefab, instantiate prefab, apply/revert override, variant, tìm instance`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `prefab_instantiate_batch` when spawning 2+ prefab instances.
+
+## Operating Mode / Chế độ quyền
 
 Approval 模式下本模块为 Mixed —— 只读 skill `prefab_get_overrides` / `prefab_find_instances`（标 `ReadOnly = true`, `Mode = SkillMode.SemiAuto`）可直接执行；其余 9 个写类 skill (`prefab_create` / `prefab_instantiate` / `prefab_instantiate_batch` / `prefab_apply` / `prefab_unpack` / `prefab_revert_overrides` / `prefab_apply_overrides` / `prefab_create_variant` / `prefab_set_property`) 为 `SkillMode.FullAuto`，需用户 grant 单次执行返结果。Auto / Bypass 直接执行。本模块**不含 NeverInSemi 高危 skill**（无 Delete / PlayMode / Reload）。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `prefab_create_from_object` does not exist → use `prefab_create` (takes scene object name/instanceId and savePath)
 - `prefab_spawn` does not exist → use `prefab_instantiate`
 - `prefab_edit` / `prefab_modify` do not exist → use `prefab_set_property` (edit prefab asset directly) or instantiate, modify, then `prefab_apply`
 - `prefab_save` does not exist → use `prefab_apply` (applies instance changes to source prefab)
 
-**Routing**:
+**Routing / Điều hướng**:
 - To modify components on a prefab instance in scene → use `component` module skills, then `prefab_apply`
 - To set a property directly on the prefab asset → `prefab_set_property` (this module)
 - To find all instances of a prefab → `prefab_find_instances` (this module)
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -55,7 +63,7 @@ Create a prefab from a scene GameObject.
 
 *At least one source identifier required.
 
-**Returns**: `{success, prefabPath, sourceObject}`
+**Returns / Trả về**: `{success, prefabPath, sourceObject}`
 
 ### prefab_instantiate
 Instantiate a prefab into the scene.
@@ -70,7 +78,7 @@ Instantiate a prefab into the scene.
 | `parentInstanceId` | int | No | 0 | Parent instance ID |
 | `parentPath` | string | No | null | Parent hierarchy path |
 
-**Returns**: `{success, name, entityId, instanceId, path, prefabPath, position}`
+**Returns / Trả về**: `{success, name, entityId, instanceId, path, prefabPath, position}`
 
 ### prefab_instantiate_batch
 Instantiate multiple prefabs in one call.
@@ -81,7 +89,7 @@ Instantiate multiple prefabs in one call.
 
 **Item properties**: `prefabPath`, `name`, `x`, `y`, `z`, `rotX`, `rotY`, `rotZ`, `scaleX`, `scaleY`, `scaleZ`, `parentEntityId`, `parentName`, `parentInstanceId`, `parentPath`
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, instanceId, prefabPath, position}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, instanceId, prefabPath, position}]}`
 
 ```python
 unity_skills.call_skill("prefab_instantiate_batch", items=[
@@ -102,7 +110,7 @@ Apply instance changes back to the prefab asset.
 
 *At least one identifier required.
 
-**Returns**: `{success, gameObject, prefabPath}`
+**Returns / Trả về**: `{success, gameObject, prefabPath}`
 
 ### prefab_unpack
 Unpack a prefab instance (break prefab connection).
@@ -116,7 +124,7 @@ Unpack a prefab instance (break prefab connection).
 
 *At least one identifier required.
 
-**Returns**: `{success, gameObject, mode}`
+**Returns / Trả về**: `{success, gameObject, mode}`
 
 ### prefab_get_overrides
 Get list of property overrides on a prefab instance.
@@ -126,7 +134,7 @@ Get list of property overrides on a prefab instance.
 | `name` | string | No* | Prefab instance name |
 | `instanceId` | int | No* | Instance ID |
 
-**Returns**: `{success, overrides: [{type, path, property}]}`
+**Returns / Trả về**: `{success, overrides: [{type, path, property}]}`
 
 ### prefab_revert_overrides
 Revert all overrides on a prefab instance back to prefab values.
@@ -152,7 +160,7 @@ Create a prefab variant from an existing prefab.
 | `sourcePrefabPath` | string | Yes | - | Path to the source prefab asset |
 | `variantPath` | string | Yes | - | Save path for the new variant |
 
-**Returns:** `{ success, sourcePath, variantPath, name }`
+**Returns / Trả về:** `{ success, sourcePath, variantPath, name }`
 
 ### prefab_find_instances
 Find all instances of a prefab in the current scene.
@@ -162,7 +170,7 @@ Find all instances of a prefab in the current scene.
 | `prefabPath` | string | Yes | - | Prefab asset path to search for |
 | `limit` | int | No | 50 | Maximum number of instances to return |
 
-**Returns:** `{ success, prefabPath, count, instances: [{ name, path, instanceId }] }`
+**Returns / Trả về:** `{ success, prefabPath, count, instances: [{ name, path, instanceId }] }`
 
 ### prefab_set_property
 Set a property on a component inside a Prefab asset file (without instantiating it). Supports basic types, vectors, colors, enums, and asset references.
@@ -178,7 +186,7 @@ Set a property on a component inside a Prefab asset file (without instantiating 
 
 > Provide either `value` (basic types) or `assetReferencePath` (asset references).
 
-**Returns:** `{ success, prefabPath, gameObject, component, property, valueSet }`
+**Returns / Trả về:** `{ success, prefabPath, gameObject, component, property, valueSet }`
 
 ```python
 # Set a float property on prefab root

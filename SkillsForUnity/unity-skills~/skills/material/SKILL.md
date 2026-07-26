@@ -1,28 +1,36 @@
 ---
 name: unity-material
-description: Edit Unity material and shader properties across Built-in/URP/HDRP — colors, textures, floats, keywords, render queue, batch-apply. Use when changing how a surface looks, tweaking material parameters, or swapping shaders. 编辑材质与 Shader 属性(Built-in/URP/HDRP:颜色、贴图、浮点值、关键字、渲染队列、批量应用);当用户要调整物体外观、改材质参数或切换 Shader 时使用。
+description: "Edit Unity material and shader properties across Built-in/URP/HDRP — colors, textures, floats, keywords, render queue, batch-apply. Use when changing how a surface looks, tweaking material parameters, or swapping shaders. 编辑材质与 Shader 属性(Built-in/URP/HDRP:颜色、贴图、浮点值、关键字、渲染队列、批量应用);当用户要调整物体外观、改材质参数或切换 Shader 时使用。 VI: material và màu sắc: tạo material, đổi màu, shader, texture, emission, keyword, render queue. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Material Skills
 
-> **BATCH-FIRST**: Use `*_batch` skills when operating on 2+ objects/materials.
+## Ghi chú tiếng Việt cho agent
 
-## Operating Mode
+- Khi user nói tiếng Việt như: `material và màu sắc: tạo material, đổi màu, shader, texture, emission, keyword, render queue`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `*_batch` skills when operating on 2+ objects/materials.
+
+## Operating Mode / Chế độ quyền
 
 - **Approval** (default): all mutating skills (`material_create`, `material_create_batch`, `material_assign`, `material_assign_batch`, `material_duplicate`, `material_set_color` / `_emission` / `_texture` / `_float` / `_int` / `_vector` / `_keyword` / `_render_queue` / `_shader` / `_texture_offset` / `_texture_scale` / `_gi_flags`, and the `*_batch` variants) need user grant; grant triggers a single server-side execution that returns the result.
 - **Auto / Bypass**: those skills execute directly.
 - Query skills (`material_get_properties`, `material_get_keywords`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - This module contains **no** Delete / PlayMode / Reload / high-risk skills (no NeverInSemi); to delete a material asset, call the `asset` module.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `material_set_metallic` / `material_set_smoothness` do not exist → use `material_set_float` with `propertyName="_Metallic"` or `"_Glossiness"` (Standard) / `"_Smoothness"` (URP)
 - `material_set_color` r/g/b/a range is **0–1**, not 0–255
 - `material_set_property` does not exist → use the specific setter: `material_set_float`, `material_set_int`, `material_set_vector`, `material_set_color`
 - `material_get_color` does not exist → use `material_get_properties` (returns all properties including colors)
 
-**Routing**:
+**Routing / Điều hướng**:
 - For shader changes → `material_set_shader` (this module)
 - For texture tiling → `material_set_texture_scale` / `material_set_texture_offset`
 - Pipeline-specific property names differ: check Render Pipeline Compatibility table in this doc
@@ -31,7 +39,7 @@ description: Edit Unity material and shader properties across Built-in/URP/HDRP 
 > - In `material_set_*` / `material_get_*` (color/emission/texture/float/int/vector/keyword/shader/render_queue/gi_flags/properties), `path` may be either a **GameObject hierarchy path** *or* a **material asset path** like `Assets/Materials/X.mat` — the skill auto-detects (paths starting with `Assets/` or ending with `.mat` are treated as material assets).
 > - In `material_assign`, `path` is a **GameObject hierarchy path only**; the material to assign goes in the separate `materialPath` parameter.
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -69,8 +77,7 @@ Create multiple materials.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, path}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, path}]}`
 
 ```python
 unity_skills.call_skill("material_create_batch", items=[
@@ -96,8 +103,7 @@ Assign materials to multiple objects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, materialPath}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, materialPath}]}`
 
 ```python
 unity_skills.call_skill("material_assign_batch", items=[
@@ -125,8 +131,7 @@ Set colors on multiple objects. Each item accepts: identifier (`name`/`instanceI
 | `items` | json string | Yes | - | JSON array of `{name|instanceId|path, r, g, b, a}` per-item objects (see example below) |
 | `propertyName` | string | No | auto-detect | Default color property applied to all items unless overridden |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
 
 ```python
 unity_skills.call_skill("material_set_colors_batch", items=[
@@ -153,8 +158,7 @@ Set emission on multiple objects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
 
 ```python
 unity_skills.call_skill("material_set_emission_batch", items=[
@@ -213,7 +217,7 @@ Get all material properties.
 | `name` | string | No* | GameObject name |
 | `path` | string | No* | Material asset path |
 
-**Returns**: `{success, target, shader, renderQueue, keywords, giFlags, properties: {colors, floats, vectors, textures, integers}}`
+**Returns / Trả về**: `{success, target, shader, renderQueue, keywords, giFlags, properties: {colors, floats, vectors, textures, integers}}`
 
 ### material_get_keywords
 Get all enabled shader keywords on a material.

@@ -1,9 +1,15 @@
 ---
 name: unity-performance
-description: Advises on Unity performance red flags — Update/allocation/pooling/physics hot paths, frame drops, and GC pressure. Use when reviewing performance, diagnosing frame drops or stutter, reducing allocations, or planning pooling/optimization, even if the user just says "太卡了" or "怎么优化". 为 Unity 性能红线提供建议(Update/分配/对象池/物理热路径、掉帧、GC 压力);当用户要做性能审查、诊断掉帧或卡顿、减少内存分配、或规划对象池/优化时使用。
+description: "Advises on Unity performance red flags — Update/allocation/pooling/physics hot paths, frame drops, and GC pressure. Use when reviewing performance, diagnosing frame drops or stutter, reducing allocations, or planning pooling/optimization, even if the user just says \"太卡了\" or \"怎么优化\". 为 Unity 性能红线提供建议(Update/分配/对象池/物理热路径、掉帧、GC 压力);当用户要做性能审查、诊断掉帧或卡顿、减少内存分配、或规划对象池/优化时使用。 VI: review hiệu năng: hot path, Update, allocation, pooling, physics, render cost. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Performance Red Flags
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `review hiệu năng: hot path, Update, allocation, pooling, physics, render cost`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Use this skill for a high-signal review of likely Unity performance issues. Focus on red flags, not speculative micro-optimizations.
 
@@ -51,7 +57,7 @@ if (Debug.isDebugBuild) Debug.Log($"Player {GetPlayerInfo()} at {Time.time}");
 ```
 The same principle as the "possibility write" rule above — the runtime pays for the *possibility* of work, not only for the work.
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Confirmed red flags
 - Likely red flags
@@ -59,7 +65,7 @@ The same principle as the "possibility write" rule above — the runtime pays fo
 - Changes not worth doing now
 - Expected gain category: clarity / frame time / GC / scalability
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 

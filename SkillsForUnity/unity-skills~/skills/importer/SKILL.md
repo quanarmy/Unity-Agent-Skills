@@ -1,29 +1,37 @@
 ---
 name: unity-importer
-description: Configure asset import settings — texture/audio/model importers, sprite settings, and per-platform overrides. Use when adjusting how assets import, setting texture compression or sprite modes, or applying per-platform import overrides, even if the user just says "导入设置" or "贴图压缩". 配置资源导入设置(texture/audio/model 导入器、sprite 设置、分平台覆盖);当用户要调整资源如何导入、设置贴图压缩或 sprite 模式、或应用分平台导入覆盖时使用。
+description: "Configure asset import settings — texture/audio/model importers, sprite settings, and per-platform overrides. Use when adjusting how assets import, setting texture compression or sprite modes, or applying per-platform import overrides, even if the user just says \"导入设置\" or \"贴图压缩\". 配置资源导入设置(texture/audio/model 导入器、sprite 设置、分平台覆盖);当用户要调整资源如何导入、设置贴图压缩或 sprite 模式、或应用分平台导入覆盖时使用。 VI: import settings: texture importer, audio importer, model importer, platform settings. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Importer Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `import settings: texture importer, audio importer, model importer, platform settings`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Use this module to change import **settings** for textures, audio, and models that already exist in the project.
 
 > **Batch-first**: Prefer the batch setters when configuring `2+` assets of the same category.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query/getter skills (`texture_get_settings`, `texture_get_info`, `texture_find_assets`, `texture_find_by_size`, `texture_get_platform_settings`, `texture_get_import_settings`, `audio_get_settings`, `audio_get_clip_info`, `audio_find_clips`, `audio_find_sources_in_scene`, `audio_get_source_info`, `audio_get_import_settings`, `model_get_settings`, `model_find_assets`, `model_get_mesh_info`, `model_get_materials_info`, `model_get_animations_info`, `model_get_rig_info`, `model_get_import_settings`, `asset_get_labels`) run directly. Setters / reimport are FullAuto — on `MODE_RESTRICTED`, run the grant protocol.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - This module contains **no** Delete / PlayMode / Reload / `RiskLevel="high"` skills — nothing auto-classifies as forbidden. Importer mutations are reachable via grant in Approval mode.
 - Setting changes do not always apply in memory immediately; call `asset_reimport` / `asset_reimport_batch` when Unity needs to fully refresh the asset.
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `importer_import` does not exist -> use `asset_import` in the `asset` module to bring files into the project
 - `importer_set_format` does not exist -> use the specific texture/audio/model setters
 - `importer_get_settings` does not exist -> use the category-specific getters
 - Settings changes do not always apply instantly in memory. Reimport may still be required
 
-**Routing**:
+**Routing / Điều hướng**:
 - File import or refresh -> `asset`
 - Texture settings -> `texture_*`
 - Audio settings -> `audio_*`

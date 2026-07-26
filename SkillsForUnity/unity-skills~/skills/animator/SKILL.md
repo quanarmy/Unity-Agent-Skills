@@ -1,29 +1,37 @@
 ---
 name: unity-animator
-description: Edit Unity Animator Controllers and control runtime parameters — manage states, transitions, layers, and parameters (float/int/bool/trigger). Use when setting up or wiring an Animator, adjusting animation state machines, or driving animation parameters at runtime, even if the user just mentions "动画" or "状态机". 编辑 Unity Animator Controller 并控制运行时参数(状态、过渡、层、参数 float/int/bool/trigger);当用户要搭建或连接 Animator、调整动画状态机、或在运行时驱动动画参数时使用。
+description: "Edit Unity Animator Controllers and control runtime parameters — manage states, transitions, layers, and parameters (float/int/bool/trigger). Use when setting up or wiring an Animator, adjusting animation state machines, or driving animation parameters at runtime, even if the user just mentions \"动画\" or \"状态机\". 编辑 Unity Animator Controller 并控制运行时参数(状态、过渡、层、参数 float/int/bool/trigger);当用户要搭建或连接 Animator、调整动画状态机、或在运行时驱动动画参数时使用。 VI: Animator Controller: parameter, state, transition, layer, assign controller, play state. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Animator Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Animator Controller: parameter, state, transition, layer, assign controller, play state`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Control Unity's Mecanim system — create Animator Controllers, add layers' states / transitions / parameters, assign controllers to GameObjects, set parameters at runtime, and play states.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**：查询类 skill（`animator_get_parameters` / `animator_get_info` / `animator_list_states`，源码标 `SkillMode.SemiAuto`）直接执行；其余变更类（create_controller / add_parameter / set_parameter / play / assign_controller / add_state / add_transition，标 `SkillMode.FullAuto`）需用户 grant，grant 后服务端一步执行返结果。
 - **Auto / Bypass**：所有 skill 直接执行；Auto 走 AI 自我评估，Bypass 全放行。
 - 本模块**不含** Delete / PlayMode / Reload / 高危 skill，无 Bypass-only 拦截项。
 - `animator_set_parameter` / `animator_play` 作用于场景中已挂 Animator 的 GameObject；如果当前不在 Play mode，状态机只在 Editor 预览模式推进，效果与 runtime 不完全等价。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `animator_create_clip` / `animator_add_clip` do not exist → AnimationClips are created via Unity Editor or asset import
 - `animator_set_speed` does not exist → use `component_set_property` on Animator component with propertyName="speed"
 
-**Routing**:
+**Routing / Điều hướng**:
 - For Timeline animation → use `timeline` module
 - For component properties on Animator → use `component` module
 - For animation import settings → use `importer` module
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Skill | Description |
 |-------|-------------|
@@ -61,7 +69,7 @@ Create a new Animator Controller.
 | `name` | string | Yes | - | Controller name |
 | `folder` | string | No | "Assets/Animations" | Save folder |
 
-**Returns**: `{success, name, path}`
+**Returns / Trả về**: `{success, name, path}`
 
 ### animator_add_parameter
 Add a parameter to a controller.
@@ -82,7 +90,7 @@ Get all parameters from a controller.
 |-----------|------|----------|-------------|
 | `controllerPath` | string | Yes | Controller asset path |
 
-**Returns**: `{controller, parameters: [{name, type, defaultFloat, defaultInt, defaultBool}]}`
+**Returns / Trả về**: `{controller, parameters: [{name, type, defaultFloat, defaultInt, defaultBool}]}`
 
 ### animator_set_parameter
 Set a parameter value at runtime (supports `name`/`instanceId`/`path`).
@@ -123,7 +131,7 @@ Get Animator component information (supports `name`/`instanceId`/`path`).
 | `instanceId` | int | No | 0 | GameObject instance ID |
 | `path` | string | No | null | GameObject hierarchy path |
 
-**Returns**: `{gameObject, instanceId, hasController, controllerPath, speed, applyRootMotion, updateMode, cullingMode, layerCount, parameterCount}`
+**Returns / Trả về**: `{gameObject, instanceId, hasController, controllerPath, speed, applyRootMotion, updateMode, cullingMode, layerCount, parameterCount}`
 
 ### animator_assign_controller
 Assign a controller to a GameObject (supports `name`/`instanceId`/`path`).
@@ -145,7 +153,7 @@ List all states in a controller layer.
 | `controllerPath` | string | Yes | - | Controller asset path |
 | `layer` | int | No | 0 | Layer index |
 
-**Returns**: `{controller, layer, layerName, stateCount, states: [{name, tag, speed, hasMotion}]}`
+**Returns / Trả về**: `{controller, layer, layerName, stateCount, states: [{name, tag, speed, hasMotion}]}`
 
 ### animator_add_state
 Add a state to an Animator Controller layer.
@@ -157,7 +165,7 @@ Add a state to an Animator Controller layer.
 | `clipPath` | string | No | null | Animation clip asset path to assign |
 | `layer` | int | No | 0 | Layer index |
 
-**Returns**: `{success, controller, stateName, layer}`
+**Returns / Trả về**: `{success, controller, stateName, layer}`
 
 ### animator_add_transition
 Add a transition between two states in an Animator Controller.
@@ -171,7 +179,7 @@ Add a transition between two states in an Animator Controller.
 | `hasExitTime` | bool | No | true | Whether transition waits for exit time |
 | `duration` | float | No | 0.25 | Transition duration in seconds |
 
-**Returns**: `{success, from, to, layer, hasExitTime, duration}`
+**Returns / Trả về**: `{success, from, to, layer, hasExitTime, duration}`
 
 ---
 

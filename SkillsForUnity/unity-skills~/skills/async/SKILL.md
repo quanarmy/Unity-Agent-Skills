@@ -1,13 +1,19 @@
 ---
 name: unity-async
-description: Advises on Unity async and lifecycle strategy — choosing among Update, coroutines, UniTask, and timers, plus cleanup and cancellation. Use when deciding how to write async code, choosing between coroutine and UniTask, scheduling timers, or handling cancellation and cleanup, even if the user just asks "异步怎么写" or "用协程还是UniTask". 为 Unity 异步与生命周期策略提供建议(在 Update、协程、UniTask、定时器间取舍,以及清理与取消);当用户要决定异步代码怎么写、在协程与 UniTask 间选择、调度定时器或处理取消与清理时使用。
+description: "Advises on Unity async and lifecycle strategy — choosing among Update, coroutines, UniTask, and timers, plus cleanup and cancellation. Use when deciding how to write async code, choosing between coroutine and UniTask, scheduling timers, or handling cancellation and cleanup, even if the user just asks \"异步怎么写\" or \"用协程还是UniTask\". 为 Unity 异步与生命周期策略提供建议(在 Update、协程、UniTask、定时器间取舍,以及清理与取消);当用户要决定异步代码怎么写、在协程与 UniTask 间选择、调度定时器或处理取消与清理时使用。 VI: async Unity: coroutine, Update loop, UniTask, cancellation, lifetime cleanup. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Async Strategy
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `async Unity: coroutine, Update loop, UniTask, cancellation, lifetime cleanup`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
+
 Use this skill when the user is deciding how runtime work should be scheduled or cleaned up.
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 
@@ -35,7 +41,7 @@ Use this skill when the user is deciding how runtime work should be scheduled or
 - In `MonoBehaviour`, prefer `OnEnable` / `OnDisable` / `OnDestroy` for subscribe-unsubscribe symmetry.
 - Use `IDisposable` mainly for pure C# lifetimes, temporary subscriptions, or scope-based cleanup helpers, not as a cargo-cult replacement for Unity lifecycle methods.
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Recommended scheduling model
 - Why it fits

@@ -1,16 +1,24 @@
 ---
 name: unity-workflow
-description: Persistent operation history and orchestration — snapshots, task/session undo, bookmarks, and batch planning/retry/rollback. Use when undoing a whole task or session, snapshotting before risky changes, planning or previewing batch operations, or rolling back, even if the user just says "撤销整个操作" or "回滚". 持久化操作历史与编排(快照、任务/会话级撤销、书签、批量规划/重试/回滚);当用户要撤销整个任务或会话、在高危改动前快照、规划或预览批量操作、或回滚时使用。
+description: "Persistent operation history and orchestration — snapshots, task/session undo, bookmarks, and batch planning/retry/rollback. Use when undoing a whole task or session, snapshotting before risky changes, planning or previewing batch operations, or rolling back, even if the user just says \"撤销整个操作\" or \"回滚\". 持久化操作历史与编排(快照、任务/会话级撤销、书签、批量规划/重试/回滚);当用户要撤销整个任务或会话、在高危改动前快照、规划或预览批量操作、或回滚时使用。 VI: workflow/history: snapshot, undo task, redo, rollback, bookmark, plan. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Workflow Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `workflow/history: snapshot, undo task, redo, rollback, bookmark, plan`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Persistent history and rollback system for AI operations ("Time Machine").
 Allows tagging tasks, snapshotting objects before modification, and undoing specific tasks even after Editor restarts.
 
 **NEW: Session-level undo** - Group all changes from a conversation and undo them together.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**：本模块大部分 skill 标 `SkillMode.SemiAuto`（bookmark / history / task / session 系列 + `workflow_plan`，后者 ReadOnly=true 仅生成聚合计划），可直接执行。少数写类 skill (`workflow_snapshot_object` / `workflow_snapshot_created` / `batch_retry_failed`) 走默认 `SkillMode.FullAuto`，需 grant。
 - **Auto / Bypass**：FullAuto 直接执行。
@@ -18,13 +26,13 @@ Allows tagging tasks, snapshotting objects before modification, and undoing spec
 
 > 注意：`workflow_undo_task` / `workflow_session_undo` 不是 Delete operation（标的是 Modify/Execute），它们能在 Approval/Auto 直接撤销已记录任务。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `workflow_save` does not exist → use `workflow_task_end` to end and save a task
 - `workflow_rollback` does not exist → use `workflow_undo_task` (by taskId) or `workflow_session_undo` (by sessionId)
 - `workflow_create` does not exist → use `workflow_task_start`
 - `workflow_revert_task` is deprecated → use `workflow_undo_task`
 
-**Routing**:
+**Routing / Điều hướng**:
 - For simple undo/redo (1 step) → `editor_undo` / `editor_redo` (editor module)
 - For multi-step undo → `history_undo` with `steps` parameter (this module)
 - For conversation-level undo → `workflow_session_undo` (this module)
@@ -39,7 +47,7 @@ Save current selection and scene view position as a bookmark.
 | bookmarkName | string | Yes | - | Name for the bookmark |
 | note | string | No | null | Optional note for the bookmark |
 
-**Returns:** `{ success, bookmark, selectedCount, hasSceneView, note }`
+**Returns / Trả về:** `{ success, bookmark, selectedCount, hasSceneView, note }`
 
 ### `bookmark_goto`
 Restore selection and scene view from a bookmark.
@@ -48,14 +56,14 @@ Restore selection and scene view from a bookmark.
 |-----------|------|----------|---------|-------------|
 | bookmarkName | string | Yes | - | Name of the bookmark to restore |
 
-**Returns:** `{ success, bookmark, restoredSelection, note }`
+**Returns / Trả về:** `{ success, bookmark, restoredSelection, note }`
 
 ### `bookmark_list`
 List all saved bookmarks.
 
 No parameters.
 
-**Returns:** `{ success, count, bookmarks: [{ name, selectedCount, hasSceneView, note, createdAt }] }`
+**Returns / Trả về:** `{ success, count, bookmarks: [{ name, selectedCount, hasSceneView, note, createdAt }] }`
 
 ### `bookmark_delete`
 Delete a bookmark.
@@ -64,7 +72,7 @@ Delete a bookmark.
 |-----------|------|----------|---------|-------------|
 | bookmarkName | string | Yes | - | Name of the bookmark to delete |
 
-**Returns:** `{ success, deleted }`
+**Returns / Trả về:** `{ success, deleted }`
 
 ## History Skills
 
@@ -75,7 +83,7 @@ Undo the last operation (or multiple steps).
 |-----------|------|----------|---------|-------------|
 | steps | int | No | 1 | Number of undo steps to perform |
 
-**Returns:** `{ success, undoneSteps }`
+**Returns / Trả về:** `{ success, undoneSteps }`
 
 ### `history_redo`
 Redo the last undone operation (or multiple steps).
@@ -84,14 +92,14 @@ Redo the last undone operation (or multiple steps).
 |-----------|------|----------|---------|-------------|
 | steps | int | No | 1 | Number of redo steps to perform |
 
-**Returns:** `{ success, redoneSteps }`
+**Returns / Trả về:** `{ success, redoneSteps }`
 
 ### `history_get_current`
 Get the name of the current undo group.
 
 No parameters.
 
-**Returns:** `{ success, currentGroup, groupIndex }`
+**Returns / Trả về:** `{ success, currentGroup, groupIndex }`
 
 ## Planning And Batch Governance
 
@@ -102,7 +110,7 @@ Generate a combined execution plan for multiple skills on the server side.
 |-----------|------|----------|---------|-------------|
 | `skillsJson` | string | Yes | - | JSON array of `{ "name": "...", "params": { ... } }` entries |
 
-**Returns:** `{ totalSteps, totalRisk, steps, dependencies, warnings, mayDisconnect }`
+**Returns / Trả về:** `{ totalSteps, totalRisk, steps, dependencies, warnings, mayDisconnect }`
 
 ### `batch_query_assets`
 Query project assets with filters that are useful before batch cleanup or migration work.
@@ -116,7 +124,7 @@ Query project assets with filters that are useful before batch cleanup or migrat
 | `labelFilter` | string | No | - | Asset label filter such as `l:Addressable` |
 | `maxResults` | int | No | `200` | Max assets returned |
 
-**Returns:** `{ count, totalMatched, summary, assets }`
+**Returns / Trả về:** `{ count, totalMatched, summary, assets }`
 
 ### `batch_retry_failed`
 Retry only the failed items from an earlier batch execution report. This now reuses the original operation context stored in the report.
@@ -127,7 +135,7 @@ Retry only the failed items from an earlier batch execution report. This now reu
 | `runAsync` | bool | No | `true` | Return a `jobId` immediately or wait for completion |
 | `chunkSize` | int | No | `100` | Chunk size for retry execution |
 
-**Returns:** `{ status, jobId?, retryCount, originalReportId, reportId? }`
+**Returns / Trả về:** `{ status, jobId?, retryCount, originalReportId, reportId? }`
 
 ## Session Management (Conversation-Level Undo)
 
@@ -139,7 +147,7 @@ Start a new session (conversation-level). All changes will be tracked and can be
 |-----------|------|----------|---------|-------------|
 | tag | string | No | null | Label for the session |
 
-**Returns:** `{ success, sessionId, message }`
+**Returns / Trả về:** `{ success, sessionId, message }`
 
 ### `workflow_session_end`
 End the current session and save all tracked changes.
@@ -147,7 +155,7 @@ End the current session and save all tracked changes.
 
 No parameters.
 
-**Returns:** `{ success, sessionId, message }`
+**Returns / Trả về:** `{ success, sessionId, message }`
 
 ### `workflow_session_undo`
 Undo all changes made during a specific session (conversation-level undo).
@@ -156,21 +164,21 @@ Undo all changes made during a specific session (conversation-level undo).
 |-----------|------|----------|---------|-------------|
 | sessionId | string | No | null | The UUID of the session to undo. If not provided, undoes the most recent session |
 
-**Returns:** `{ success, sessionId, message }`
+**Returns / Trả về:** `{ success, sessionId, message }`
 
 ### `workflow_session_list`
 List all recorded sessions (conversation-level history).
 
 No parameters.
 
-**Returns:** `{ success, count, currentSessionId, sessions: [{ sessionId, taskCount, totalChanges, startTime, endTime, tags }] }`
+**Returns / Trả về:** `{ success, count, currentSessionId, sessions: [{ sessionId, taskCount, totalChanges, startTime, endTime, tags }] }`
 
 ### `workflow_session_status`
 Get the current session status.
 
 No parameters.
 
-**Returns:** `{ success, hasActiveSession, currentSessionId, isRecording, currentTaskId, currentTaskTag, currentTaskDescription, snapshotCount }`
+**Returns / Trả về:** `{ success, hasActiveSession, currentSessionId, isRecording, currentTaskId, currentTaskTag, currentTaskDescription, snapshotCount }`
 
 ## Task-Level Skills
 
@@ -182,14 +190,14 @@ Start a new persistent workflow task to track changes for undo. Call workflow_ta
 | tag | string | Yes | - | Short label for the task (e.g., "Create NPC") |
 | description | string | No | "" | Detailed description or prompt |
 
-**Returns:** `{ success, taskId, message }`
+**Returns / Trả về:** `{ success, taskId, message }`
 
 ### `workflow_task_end`
 End the current workflow task and save it. Requires an active task (call workflow_task_start first).
 
 No parameters.
 
-**Returns:** `{ success, taskId, snapshotCount, message }`
+**Returns / Trả về:** `{ success, taskId, snapshotCount, message }`
 
 ### `workflow_snapshot_object`
 Manually snapshot an object's state before modification. Requires an active task (call workflow_task_start first).
@@ -200,7 +208,7 @@ Manually snapshot an object's state before modification. Requires an active task
 | name | string | No | null | Name of the Game Object |
 | instanceId | int | No | 0 | Instance ID of the object (preferred) |
 
-**Returns:** `{ success, objectName, type }`
+**Returns / Trả về:** `{ success, objectName, type }`
 
 ### `workflow_snapshot_created`
 Record a newly created object for undo tracking. Requires an active task (call workflow_task_start first).
@@ -211,14 +219,14 @@ Record a newly created object for undo tracking. Requires an active task (call w
 | name | string | No | null | Name of the Game Object |
 | instanceId | int | No | 0 | Instance ID of the object (preferred) |
 
-**Returns:** `{ success, objectName, type }`
+**Returns / Trả về:** `{ success, objectName, type }`
 
 ### `workflow_list`
 List persistent workflow history.
 
 No parameters.
 
-**Returns:** `{ success, count, history: [{ id, tag, description, time, changes }] }`
+**Returns / Trả về:** `{ success, count, history: [{ id, tag, description, time, changes }] }`
 
 ### `workflow_undo_task`
 Undo changes from a specific task (restore to previous state). The undone task is saved and can be redone later.
@@ -227,7 +235,7 @@ Undo changes from a specific task (restore to previous state). The undone task i
 |-----------|------|----------|---------|-------------|
 | taskId | string | Yes | - | The UUID of the task to undo |
 
-**Returns:** `{ success, taskId }`
+**Returns / Trả về:** `{ success, taskId }`
 
 ### `workflow_redo_task`
 Redo a previously undone task (restore changes).
@@ -236,14 +244,14 @@ Redo a previously undone task (restore changes).
 |-----------|------|----------|---------|-------------|
 | taskId | string | No | null | The UUID of the task to redo. If not provided, redoes the most recently undone task |
 
-**Returns:** `{ success, taskId }`
+**Returns / Trả về:** `{ success, taskId }`
 
 ### `workflow_undone_list`
 List all undone tasks that can be redone.
 
 No parameters.
 
-**Returns:** `{ success, count, undoneStack: [{ id, tag, description, time, changes }] }`
+**Returns / Trả về:** `{ success, count, undoneStack: [{ id, tag, description, time, changes }] }`
 
 ### `workflow_revert_task`
 **(deprecated)** Alias for `workflow_undo_task`. Use `workflow_undo_task` instead.
@@ -252,7 +260,7 @@ No parameters.
 |-----------|------|----------|---------|-------------|
 | taskId | string | Yes | - | The UUID of the task to undo |
 
-**Returns:** `{ success, taskId }`
+**Returns / Trả về:** `{ success, taskId }`
 
 ### `workflow_delete_task`
 Delete a task from history (does not revert changes, just removes the record).
@@ -261,7 +269,7 @@ Delete a task from history (does not revert changes, just removes the record).
 |-----------|------|----------|---------|-------------|
 | taskId | string | Yes | - | The UUID of the task to delete |
 
-**Returns:** `{ success, deletedId }`
+**Returns / Trả về:** `{ success, deletedId }`
 
 ### `workflow_clear_history`
 Permanently clear **ALL** workflow history: every task, the redo (undone) stack, and every backed-up file blob in the content-addressed store. High-risk and irreversible.

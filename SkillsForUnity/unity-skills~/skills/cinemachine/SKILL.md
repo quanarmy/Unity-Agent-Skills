@@ -1,13 +1,21 @@
 ---
 name: unity-cinemachine
-description: Set up Cinemachine Virtual Cameras — VCam/FreeLook/ClearShot/StateDriven cameras and the Body/Aim/Noise pipeline. Use when creating or tuning Cinemachine cameras, configuring follow/look-at or noise, or building cinematic camera behavior, even if the user just says "虚拟相机" or "运镜". 配置 Cinemachine 虚拟相机(VCam/FreeLook/ClearShot/StateDriven 及 Body/Aim/Noise 管线);当用户要创建或调校 Cinemachine 相机、设置跟随/注视或噪声、或构建运镜效果时使用。
+description: "Set up Cinemachine Virtual Cameras — VCam/FreeLook/ClearShot/StateDriven cameras and the Body/Aim/Noise pipeline. Use when creating or tuning Cinemachine cameras, configuring follow/look-at or noise, or building cinematic camera behavior, even if the user just says \"虚拟相机\" or \"运镜\". 配置 Cinemachine 虚拟相机(VCam/FreeLook/ClearShot/StateDriven 及 Body/Aim/Noise 管线);当用户要创建或调校 Cinemachine 相机、设置跟随/注视或噪声、或构建运镜效果时使用。 VI: Cinemachine camera: vcam, follow/lookAt, blend, path/dolly, camera shake. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Cinemachine Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Cinemachine camera: vcam, follow/lookAt, blend, path/dolly, camera shake`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Control Cinemachine Virtual Cameras and brain settings. Works with Cinemachine **2.x and 3.x** through a runtime reflection adapter (`CinemachineAdapter` / `CinemachineSkills`).
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**：查询类 skill（`cinemachine_inspect_vcam` / `cinemachine_list_components` / `cinemachine_get_brain_info`，源码标 `SkillMode.SemiAuto`）直接执行；其余配置/创建类（`cinemachine_create_vcam` / `cinemachine_set_targets` / `cinemachine_set_lens` / `cinemachine_configure_body` / `cinemachine_configure_aim` 等，标 `SkillMode.FullAuto`）需用户 grant，grant 后服务端一步执行返结果。
 - **Auto / Bypass**：未被禁列表拦截的 skill 直接执行。
@@ -15,7 +23,7 @@ Control Cinemachine Virtual Cameras and brain settings. Works with Cinemachine *
 - **包依赖**：必须安装 `com.unity.cinemachine` 包（CM 2.x 或 3.x）。未安装时所有 skill 返回 `{ error = "Cinemachine 未安装..." }` 的 stub —— 调用方应先用 `package_*` 系列 skill 确认安装状态。
 - **反射脆弱性**：CM2 ↔ CM3 之间 API 名变化大（`CinemachineVirtualCamera` → `CinemachineCamera`，`CinemachineComponentBase` 改名等）。本模块通过 `CinemachineAdapter` 反射桥接，遇 CM 早期预览版（< `3.0.0-pre.5`）可能因 API 漂移返回失败 —— 优先用 `cinemachine_inspect_vcam` 探测当前可用字段，再决定 `propertyName`。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `cinemachine_create` does not exist → use `cinemachine_create_vcam` for virtual cameras
 - `cinemachine_set_target` / `cinemachine_set_follow` / `cinemachine_set_lookat` do not exist → use `cinemachine_set_targets` (sets both Follow and LookAt in one call)
 - `cinemachine_add_brain` does not exist → CinemachineBrain is auto-added to Main Camera on first VCam creation
@@ -25,7 +33,7 @@ Additional compatibility notes:
 - CM3 priority access should use `Priority.Value` as the lowest common API when writing compatibility code.
 - Early CM3 previews before `3.0.0-pre.5` changed core camera APIs significantly and are outside the current support baseline.
 
-**Routing**:
+**Routing / Điều hướng**:
 - For basic Game Camera operations → use `camera` module
 - For Scene View camera → use `camera` module's `camera_set_transform`/`camera_look_at`
 - For camera animation sequences → use `timeline` module with Cinemachine track
@@ -34,20 +42,20 @@ Additional compatibility notes:
 
 ### `cinemachine_create_vcam`
 Create a new Virtual Camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the VCam GameObject.
 - `folder` (string): Parent folder path (default: "Assets/Settings").
 
 ### `cinemachine_inspect_vcam`
 Deeply inspect a VCam, returning fields and tooltips.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string, optional): Name of the VCam GameObject.
 - `instanceId` (int, optional): VCam instance ID.
 - `path` (string, optional): VCam hierarchy path.
 
 ### `cinemachine_set_vcam_property`
 Set any property on VCam or its pipeline components.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `instanceId` (int, optional): VCam Instance ID.
 - `path` (string, optional): VCam hierarchy path.
@@ -61,7 +69,7 @@ Set any property on VCam or its pipeline components.
 
 ### `cinemachine_set_targets`
 Set Follow and LookAt targets.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `instanceId` (int, optional): VCam Instance ID (preferred for precision).
 - `path` (string, optional): VCam hierarchy path.
@@ -70,7 +78,7 @@ Set Follow and LookAt targets.
 
 ### `cinemachine_set_component`
 Switch VCam pipeline component (Body/Aim/Noise).
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `stage` (string): "Body", "Aim", or "Noise".
 - `componentType` (string): Type name (e.g. "OrbitalFollow", "Composer") or "None" to remove.
@@ -78,7 +86,7 @@ Switch VCam pipeline component (Body/Aim/Noise).
 ### `cinemachine_add_component`
 > **DEPRECATED** — Use `cinemachine_set_component` instead for proper pipeline control (Body/Aim/Noise stages).
 Add a Cinemachine component (legacy, supports CM2 and CM3).
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `instanceId` (int, optional): VCam Instance ID.
 - `path` (string, optional): VCam hierarchy path.
@@ -86,7 +94,7 @@ Add a Cinemachine component (legacy, supports CM2 and CM3).
 
 ### `cinemachine_set_lens`
 Quickly configure Lens settings (FOV, Near, Far, OrthoSize).
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `fov` (float, optional): Field of View.
 - `nearClip` (float, optional): Near Clip Plane.
@@ -95,27 +103,27 @@ Quickly configure Lens settings (FOV, Near, Far, OrthoSize).
 
 ### `cinemachine_list_components`
 List all available Cinemachine component names.
-**Parameters:**
+**Parameters / Tham số:**
 - None.
 
 ### `cinemachine_impulse_generate`
 Trigger an Impulse at location or via Source.
-**Parameters:**
+**Parameters / Tham số:**
 - `sourceParams` (string, optional): JSON string for parameters, e.g., `{"velocity": {"x": 0, "y": -1, "z": 0}}`.
 
 ### `cinemachine_get_brain_info`
 Get info about the Active Camera and Blend.
-**Parameters:**
+**Parameters / Tham số:**
 - None.
 
 ### `cinemachine_create_target_group`
 Create a CinemachineTargetGroup.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the new TargetGroup GameObject.
 
 ### `cinemachine_target_group_add_member`
 Add or update a member in a TargetGroup.
-**Parameters:**
+**Parameters / Tham số:**
 - `groupName` (string): Name of the TargetGroup.
 - `targetName` (string): Name of the member GameObject.
 - `weight` (float): Member weight (default 1).
@@ -123,41 +131,41 @@ Add or update a member in a TargetGroup.
 
 ### `cinemachine_target_group_remove_member`
 Remove a member from a TargetGroup.
-**Parameters:**
+**Parameters / Tham số:**
 - `groupName` (string): Name of the TargetGroup.
 - `targetName` (string): Name of the member GameObject.
 
 ### `cinemachine_set_spline`
 Assign a SplineContainer to a VCam's SplineDolly component (Body stage).
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `splineName` (string): Name of the GameObject with SplineContainer.
 
 ### `cinemachine_add_extension`
 Add a CinemachineExtension to a VCam.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `extensionName` (string): Type name of the extension (e.g., "CinemachineStoryboard", "CinemachineImpulseListener").
 
 ### `cinemachine_remove_extension`
 Remove a CinemachineExtension from a VCam.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `extensionName` (string): Type name of the extension.
 
 ### `cinemachine_set_active`
 Force activation of a VCam (SOLO) by setting highest priority.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam to activate.
 
 ### `cinemachine_create_mixing_camera`
 Create a Cinemachine Mixing Camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the new GameObject.
 
 ### `cinemachine_mixing_camera_set_weight`
 Set the weight of a child camera within a Mixing Camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `mixerName` (string, optional): Name of the Mixing Camera.
 - `mixerInstanceId` (int, optional): Mixing Camera instance ID.
 - `mixerPath` (string, optional): Mixing Camera hierarchy path.
@@ -170,18 +178,18 @@ Set the weight of a child camera within a Mixing Camera.
 
 ### `cinemachine_create_clear_shot`
 Create a Cinemachine Clear Shot Camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the new GameObject.
 
 ### `cinemachine_create_state_driven_camera`
 Create a Cinemachine State Driven Camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the new GameObject.
 - `targetAnimatorName` (string, optional): Name of the GameObject with the Animator to bind.
 
 ### `cinemachine_state_driven_camera_add_instruction`
 Add a state mapping instruction to a State Driven Camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `cameraName` (string, optional): Name of the State Driven Camera.
 - `cameraInstanceId` (int, optional): State Driven Camera instance ID.
 - `cameraPath` (string, optional): State Driven Camera hierarchy path.
@@ -196,14 +204,14 @@ Add a state mapping instruction to a State Driven Camera.
 
 ### `cinemachine_set_noise`
 Configure Noise settings (Basic Multi Channel Perlin).
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string): Name of the VCam.
 - `amplitudeGain` (float): Noise Amplitude.
 - `frequencyGain` (float): Noise Frequency.
 
 ### `cinemachine_set_priority`
 Set explicit priority value for a Virtual Camera. Higher priority wins activation.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string, optional): VCam name. Provide one of name/instanceId/path.
 - `instanceId` (int, optional): VCam Instance ID.
 - `path` (string, optional): VCam hierarchy path.
@@ -211,7 +219,7 @@ Set explicit priority value for a Virtual Camera. Higher priority wins activatio
 
 ### `cinemachine_set_blend`
 Set default blend or per-camera-pair blend on the CinemachineBrain. Leave `fromCamera`/`toCamera` empty for default blend.
-**Parameters:**
+**Parameters / Tham số:**
 - `style` (string): Blend style — `Cut`/`EaseInOut`/`EaseIn`/`EaseOut`/`HardIn`/`HardOut`/`Linear` (default `EaseInOut`).
 - `time` (float): Blend duration in seconds (default `2`).
 - `fromCamera` (string, optional): Source VCam name for per-pair blend.
@@ -219,7 +227,7 @@ Set default blend or per-camera-pair blend on the CinemachineBrain. Leave `fromC
 
 ### `cinemachine_set_brain`
 Configure CinemachineBrain properties: update method, default blend, debug display.
-**Parameters:**
+**Parameters / Tham số:**
 - `updateMethod` (string, optional): `FixedUpdate`/`LateUpdate`/`SmartUpdate`/`ManualUpdate`.
 - `blendUpdateMethod` (string, optional): `FixedUpdate`/`LateUpdate`.
 - `defaultBlendStyle` (string, optional): Blend style name (see `cinemachine_set_blend`).
@@ -230,13 +238,13 @@ Configure CinemachineBrain properties: update method, default blend, debug displ
 
 ### `cinemachine_create_sequencer`
 Create a Sequencer camera (CM3) or BlendList camera (CM2) that plays child cameras in sequence.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the new GameObject.
 - `loop` (bool): Whether to loop the sequence (default `false`).
 
 ### `cinemachine_sequencer_add_instruction`
 Add a child camera instruction to a Sequencer/BlendList camera.
-**Parameters:**
+**Parameters / Tham số:**
 - `sequencerName` (string, optional): Sequencer camera name.
 - `sequencerInstanceId` (int, optional): Sequencer Instance ID.
 - `sequencerPath` (string, optional): Sequencer hierarchy path.
@@ -253,14 +261,14 @@ Provide at least one identifier for each of sequencer and child camera.
 
 ### `cinemachine_create_freelook`
 Create a FreeLook camera. CM2 uses `CinemachineFreeLook`; CM3 builds `CinemachineCamera` + `OrbitalFollow(ThreeRing)` + `RotationComposer`.
-**Parameters:**
+**Parameters / Tham số:**
 - `name` (string): Name of the new GameObject.
 - `followName` (string, optional): GameObject to follow.
 - `lookAtName` (string, optional): GameObject to look at.
 
 ### `cinemachine_configure_camera_manager`
 Configure ClearShot/StateDriven/Sequencer camera manager properties in one call. Applies only the properties whose matching component exists on the target.
-**Parameters:**
+**Parameters / Tham số:**
 - `cameraName` (string, optional): Camera manager name. Provide one of name/instanceId/path.
 - `cameraInstanceId` (int, optional): Camera manager Instance ID.
 - `cameraPath` (string, optional): Camera manager hierarchy path.
@@ -275,7 +283,7 @@ Configure ClearShot/StateDriven/Sequencer camera manager properties in one call.
 
 ### `cinemachine_configure_body`
 Configure the Body stage component (Follow, OrbitalFollow, ThirdPersonFollow, PositionComposer, FramingTransposer, etc.) in one call. Only fields matching the active component are applied.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string, optional): VCam name. Provide one of name/instanceId/path.
 - `instanceId` (int, optional): VCam Instance ID.
 - `path` (string, optional): VCam hierarchy path.
@@ -304,7 +312,7 @@ PositionComposer / FramingTransposer:
 
 ### `cinemachine_configure_aim`
 Configure the Aim stage component (RotationComposer, Composer, PanTilt, POV, etc.) in one call. Only fields matching the active component are applied.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string, optional): VCam name. Provide one of name/instanceId/path.
 - `instanceId` (int, optional): VCam Instance ID.
 - `path` (string, optional): VCam hierarchy path.
@@ -326,7 +334,7 @@ Target offset:
 
 ### `cinemachine_configure_extension`
 Configure a Cinemachine extension (`CinemachineConfiner`, `CinemachineDeoccluder`/`Collider`, `CinemachineFollowZoom`, `CinemachineGroupFraming`, etc.). If `extensionName` is omitted, the first extension on the VCam is used.
-**Parameters:**
+**Parameters / Tham số:**
 - `vcamName` (string, optional): VCam name. Provide one of name/instanceId/path.
 - `instanceId` (int, optional): VCam Instance ID.
 - `path` (string, optional): VCam hierarchy path.
@@ -354,7 +362,7 @@ GroupFraming:
 
 ### `cinemachine_configure_impulse_source`
 Configure `CinemachineImpulseSource` definition (shape, duration, gains). If no source is specified, the first `CinemachineImpulseSource` in the scene is used.
-**Parameters:**
+**Parameters / Tham số:**
 - `sourceName` (string, optional): Source name. Provide one of name/instanceId/path; omit all to pick the first source.
 - `sourceInstanceId` (int, optional): Source Instance ID.
 - `sourcePath` (string, optional): Source hierarchy path.

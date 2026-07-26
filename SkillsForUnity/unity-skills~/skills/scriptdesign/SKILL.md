@@ -1,9 +1,15 @@
 ---
 name: unity-scriptdesign
-description: Advises on Unity gameplay script quality — code review, reducing coupling, improving maintainability, and refactoring. Use when reviewing code quality, untangling tightly-coupled scripts, or planning a refactor for maintainability, even if the user just says "看看我代码" or "代码有点乱". 为 Unity 游戏脚本质量提供建议(代码审查、降低耦合、提升可维护性、重构);当用户要审查代码质量、理顺高耦合脚本、或为可维护性规划重构时使用。
+description: "Advises on Unity gameplay script quality — code review, reducing coupling, improving maintainability, and refactoring. Use when reviewing code quality, untangling tightly-coupled scripts, or planning a refactor for maintainability, even if the user just says \"看看我代码\" or \"代码有点乱\". 为 Unity 游戏脚本质量提供建议(代码审查、降低耦合、提升可维护性、重构);当用户要审查代码质量、理顺高耦合脚本、或为可维护性规划重构时使用。 VI: thiết kế script: coupling, responsibility, dependency, maintainability, code review. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Script Design Review
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `thiết kế script: coupling, responsibility, dependency, maintainability, code review`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Use this skill before creating gameplay scripts, or after scripts are generated and need a design pass.
 
@@ -42,7 +48,7 @@ The Review Checklist above asks "where does this *class* live". Ask the same que
 
 Mixing the three lifecycles is what turns a clean class into a god object. A `MonoBehaviour` whose `public float speed` is edited by both the Inspector **and** a power-up script has two owners and no invariant; a bug in either path corrupts the other. The ECS baking pipeline makes this distinction a hard architectural boundary (Authoring → Baker → System), and the discipline transfers directly: if you would not mix an Authoring component with runtime write-back in ECS, do not mix them in a MonoBehaviour either. *Source: `EntitiesSamples/Docs/baking.md:5-16`.*
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 
@@ -50,7 +56,7 @@ Mixing the three lifecycles is what turns a clean class into a god object. A `Mo
 - Do not “optimize” readability away for imagined productivity gains.
 - Do not recommend complex patterns if a smaller refactor fixes the real problem.
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Keep: what is already good
 - Simplify: what should stay straightforward

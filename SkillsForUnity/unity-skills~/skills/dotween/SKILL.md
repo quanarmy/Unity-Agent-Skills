@@ -1,15 +1,23 @@
 ---
 name: unity-dotween
-description: Automate DOTween Free/Pro at editor time — probe/validate/configure DOTween settings, list modules/shortcuts, and add/batch/stagger/tune DOTweenAnimation components. Use when setting up DOTween in a project, validating its install/modules, or configuring DOTweenAnimation components in the editor, even if the user just says "DOTween" or "配置动画插件". 在编辑器期自动化 DOTween Free/Pro(探测/校验/配置 DOTween 设置、列出模块/快捷方法、添加/批量/错峰/调校 DOTweenAnimation 组件);当用户要在项目中接入 DOTween、校验其安装/模块、或配置 DOTweenAnimation 组件时使用。
+description: "Automate DOTween Free/Pro at editor time — probe/validate/configure DOTween settings, list modules/shortcuts, and add/batch/stagger/tune DOTweenAnimation components. Use when setting up DOTween in a project, validating its install/modules, or configuring DOTweenAnimation components in the editor, even if the user just says \"DOTween\" or \"配置动画插件\". 在编辑器期自动化 DOTween Free/Pro(探测/校验/配置 DOTween 设置、列出模块/快捷方法、添加/批量/错峰/调校 DOTweenAnimation 组件);当用户要在项目中接入 DOTween、校验其安装/模块、或配置 DOTweenAnimation 组件时使用。 VI: DOTween: DOTweenAnimation, tween move/rotate/scale/fade/color, sequence, setup. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # DOTween Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `DOTween: DOTweenAnimation, tween move/rotate/scale/fade/color, sequence, setup`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 DOTween Free/Pro support for project diagnostics, settings, module/API discovery, and runtime script generation. DOTween Pro-only `DOTweenAnimation` editor-time configuration remains available through `dotween_pro_*` skills.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query/diagnostic skills (`dotween_get_status`, `dotween_settings_get`, `dotween_settings_find`, `dotween_settings_validate`, `dotween_list_modules`, `dotween_list_shortcuts`, `dotween_pro_get_animation`, `dotween_pro_list_animations`) run directly. Mutators (settings configure, script generators, all other `dotween_pro_*`) are FullAuto — on `MODE_RESTRICTED`, run the grant protocol.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - Auto-forbidden in this module: `dotween_generate_tween_script`, `dotween_generate_sequence_script`, `dotween_generate_lifetime_script` (all carry `MayTriggerReload = true`, `RiskLevel = "high"` because writing a new `.cs` triggers script compilation + Domain Reload). Reachable only under Bypass mode or via a user-managed Allowlist entry; the grant flow returns `MODE_FORBIDDEN`.
@@ -75,15 +83,15 @@ dotween_generate_sequence_script className=ButtonPop targetKind=Transform stepsJ
 
 ### `dotween_pro_add_animation`
 Add one DOTweenAnimation to a GameObject and configure all core fields.
-**Parameters:** `target` / `animationType` / `endValueV3?` / `endValueFloat?` / `endValueColor?` / `endValueV2?` / `endValueString?` / `endValueRect?` / `duration=1` / `ease="OutQuad"` / `loops=1` / `loopType="Yoyo"` / `delay=0` / `isRelative=false` / `isFrom=false` / `autoPlay=true` / `autoKill=true` / `id?`
+**Parameters / Tham số:** `target` / `animationType` / `endValueV3?` / `endValueFloat?` / `endValueColor?` / `endValueV2?` / `endValueString?` / `endValueRect?` / `duration=1` / `ease="OutQuad"` / `loops=1` / `loopType="Yoyo"` / `delay=0` / `isRelative=false` / `isFrom=false` / `autoPlay=true` / `autoKill=true` / `id?`
 
 ### `dotween_pro_batch_add_animation`
 Add the same animation to multiple GameObjects.
-**Parameters:** `targetsJson` (JSON string array) + all params of dotween_pro_add_animation.
+**Parameters / Tham số:** `targetsJson` (JSON string array) + all params of dotween_pro_add_animation.
 
 ### `dotween_pro_stagger_animations`
 Batch-add with incrementing delay — UI cascade entrance pattern.
-**Parameters:** `targetsJson` / `animationType` / `endValueV3?` / `endValueFloat?` / `endValueColor?` / `endValueV2?` / `duration=0.5` / `ease="OutBack"` / `loops=1` / `loopType="Yoyo"` / `baseDelay=0` / `staggerDelay=0.1` / `isFrom=true` / `autoPlay=true` / `autoKill=true`
+**Parameters / Tham số:** `targetsJson` / `animationType` / `endValueV3?` / `endValueFloat?` / `endValueColor?` / `endValueV2?` / `duration=0.5` / `ease="OutBack"` / `loops=1` / `loopType="Yoyo"` / `baseDelay=0` / `staggerDelay=0.1` / `isFrom=true` / `autoPlay=true` / `autoKill=true`
 
 ### `dotween_pro_set_duration`
 Change `duration` on an existing DOTweenAnimation. Parameters: `target`, `animationIndex=0`, `duration`.

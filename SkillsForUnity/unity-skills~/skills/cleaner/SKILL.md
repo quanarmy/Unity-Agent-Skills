@@ -1,31 +1,39 @@
 ---
 name: unity-cleaner
-description: Clean up and audit a Unity project — find unused assets, content-hash duplicates, missing references, and empty folders. Use when reducing project bloat, hunting duplicate or orphaned assets, or auditing before a release, even if the user just says "清理项目" or "瘦身". 清理与审计 Unity 工程(查找未使用资源、内容哈希重复项、丢失引用、空文件夹);当用户要给项目瘦身、排查重复或孤立资源、或发布前审计时使用。
+description: "Clean up and audit a Unity project — find unused assets, content-hash duplicates, missing references, and empty folders. Use when reducing project bloat, hunting duplicate or orphaned assets, or auditing before a release, even if the user just says \"清理项目\" or \"瘦身\". 清理与审计 Unity 工程(查找未使用资源、内容哈希重复项、丢失引用、空文件夹);当用户要给项目瘦身、排查重复或孤立资源、或发布前审计时使用。 VI: dọn dẹp project: unused assets, duplicate assets, empty folders, cleanup preview. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Cleaner Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `dọn dẹp project: unused assets, duplicate assets, empty folders, cleanup preview`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 > **Safety**: `cleaner_delete_assets` uses a **two-step confirmToken handshake**. Call without `confirmToken` to preview; call again with the returned token (5-minute TTL) to actually delete. There is no `dryRun` parameter.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): all analyze/query skills (`cleaner_find_unused_assets`, `cleaner_find_duplicates`, `cleaner_find_missing_references`, `cleaner_get_asset_usage`, `cleaner_find_empty_folders`, `cleaner_find_large_assets`, `cleaner_get_dependency_tree`) are SemiAuto — run directly.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - Auto-forbidden in this module: `cleaner_delete_assets`, `cleaner_delete_empty_folders` (both carry `SkillOperation.Delete`). In Approval/Auto these return `MODE_FORBIDDEN` — they are reachable only under Bypass mode or via a user-managed Allowlist entry; the grant flow does **not** unlock them.
 - `cleaner_fix_missing_scripts` is an `Execute | Modify` operation (it replaces missing component references with null in place, no asset deletion), so it **does not** trigger the NeverInSemi gate. In Auto / Bypass it runs directly; in Approval it still requires the standard grant handshake before execution.
 - `cleaner_delete_assets` additionally uses a two-step `confirmToken` handshake even when the mode gate allows it — preview first (no token), then confirm with the returned token (5-minute TTL).
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `cleaner_delete` / `cleaner_remove` do not exist → cleaner skills only find/report; use `asset_delete` to actually remove
 - `cleaner_fix` does not exist → use `cleaner_fix_missing_scripts` specifically for missing script references
 - `cleaner_scan` / `cleaner_find_unused` do not exist → use specific skills: `cleaner_find_unused_assets`, `cleaner_find_duplicates`, `cleaner_find_missing_references`, `cleaner_find_empty_folders`, `cleaner_find_large_assets`
 
-**Routing**:
+**Routing / Điều hướng**:
 - To delete found assets → use `asset` module's `asset_delete` / `asset_delete_batch`
 - For project validation → use `validation` module
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Skill | Description |
 |-------|-------------|
@@ -53,7 +61,7 @@ Find potentially unused assets of a specific type.
 | `searchPath` | string | No | "Assets" | Search path |
 | `limit` | int | No | 100 | Max results |
 
-**Returns**: `{success, assetType, potentiallyUnusedCount, assets: [{path, name, type, sizeBytes}]}`
+**Returns / Trả về**: `{success, assetType, potentiallyUnusedCount, assets: [{path, name, type, sizeBytes}]}`
 
 ```python
 # Find unused materials
@@ -73,7 +81,7 @@ Find duplicate files by MD5 hash.
 | `searchPath` | string | No | "Assets" | Search path |
 | `limit` | int | No | 50 | Max groups |
 
-**Returns**: `{success, duplicateGroupCount, totalWastedBytes, totalWastedMB, groups: [{count, sizeBytes, wastedBytes, files}]}`
+**Returns / Trả về**: `{success, duplicateGroupCount, totalWastedBytes, totalWastedMB, groups: [{count, sizeBytes, wastedBytes, files}]}`
 
 ```python
 # Find duplicate textures
@@ -88,7 +96,7 @@ Find components with missing scripts or null references.
 |-----------|------|----------|---------|-------------|
 | `includeInactive` | bool | No | true | Include inactive objects |
 
-**Returns**: `{success, issueCount, missingScripts, missingReferences, issues: [{type, gameObject, path, ...}]}`
+**Returns / Trả về**: `{success, issueCount, missingScripts, missingReferences, issues: [{type, gameObject, path, ...}]}`
 
 ```python
 # Scan for all missing references
@@ -108,7 +116,7 @@ Delete specified assets with **two-step confirmation**.
 |-----------|------|----------|-------------|
 | `paths` | string[] | Yes | Asset paths to delete |
 
-**Returns**: `{action: "preview", confirmToken, assetsToDelete, message}`
+**Returns / Trả về**: `{action: "preview", confirmToken, assetsToDelete, message}`
 
 **Step 2 - Confirm** (with confirmToken):
 
@@ -116,7 +124,7 @@ Delete specified assets with **two-step confirmation**.
 |-----------|------|----------|-------------|
 | `confirmToken` | string | Yes | Token from preview step |
 
-**Returns**: `{action: "deleted", deletedCount, results}`
+**Returns / Trả về**: `{action: "deleted", deletedCount, results}`
 
 ```python
 # Step 1: Preview what will be deleted
@@ -140,7 +148,7 @@ Find what objects reference a specific asset.
 | `assetPath` | string | Yes | Asset path |
 | `limit` | int | No | Max results (default 50) |
 
-**Returns**: `{success, asset, usedByCount, usedBy: [{path, name, type}]}`
+**Returns / Trả về**: `{success, asset, usedByCount, usedBy: [{path, name, type}]}`
 
 ```python
 # Check what uses a texture
@@ -155,7 +163,7 @@ Find empty folders in the project.
 |-----------|------|----------|---------|-------------|
 | `searchPath` | string | No | "Assets" | Search path |
 
-**Returns:** `{ success, count, folders }`
+**Returns / Trả về:** `{ success, count, folders }`
 
 ```python
 # Find empty folders
@@ -172,7 +180,7 @@ Find largest assets by file size.
 | `limit` | int | No | 20 | Max results |
 | `minSizeBytes` | long | No | 0 | Minimum file size in bytes |
 
-**Returns:** `{ success, count, assets: [{ path, sizeBytes, sizeMB }] }`
+**Returns / Trả về:** `{ success, count, assets: [{ path, sizeBytes, sizeMB }] }`
 
 ```python
 # Find top 10 largest assets over 1 MB
@@ -188,7 +196,7 @@ Delete all empty folders.
 |-----------|------|----------|---------|-------------|
 | `searchPath` | string | No | "Assets" | Search path |
 
-**Returns:** `{ success, deleted, total }`
+**Returns / Trả về:** `{ success, deleted, total }`
 
 ```python
 # Delete all empty folders
@@ -203,7 +211,7 @@ Remove missing script components from GameObjects.
 |-----------|------|----------|---------|-------------|
 | `includeInactive` | bool | No | true | Include inactive objects |
 
-**Returns:** `{ success, removedComponents }`
+**Returns / Trả về:** `{ success, removedComponents }`
 
 ```python
 # Remove all missing script components
@@ -219,7 +227,7 @@ Get dependency tree for an asset.
 | `assetPath` | string | Yes | - | Asset path |
 | `recursive` | bool | No | true | Recursively resolve dependencies |
 
-**Returns:** `{ success, assetPath, dependencyCount, dependencies: [{ path, type }] }`
+**Returns / Trả về:** `{ success, assetPath, dependencyCount, dependencies: [{ path, type }] }`
 
 ```python
 # Get full dependency tree for a prefab

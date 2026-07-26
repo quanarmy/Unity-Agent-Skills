@@ -1,13 +1,21 @@
 ---
 name: unity-shadergraph
-description: Create and inspect Shader Graph assets — create graphs, inspect structure, and perform constrained blackboard and node editing. Use when creating a Shader Graph, inspecting its structure, or making controlled edits to its blackboard or nodes, even if the user just says "shader graph" or "着色器图". 创建与检查 Shader Graph 资产(创建图、检查结构、受约束的黑板与节点编辑);当用户要创建 Shader Graph、检查其结构、或对黑板/节点做受控编辑时使用。
+description: "Create and inspect Shader Graph assets — create graphs, inspect structure, and perform constrained blackboard and node editing. Use when creating a Shader Graph, inspecting its structure, or making controlled edits to its blackboard or nodes, even if the user just says \"shader graph\" or \"着色器图\". 创建与检查 Shader Graph 资产(创建图、检查结构、受约束的黑板与节点编辑);当用户要创建 Shader Graph、检查其结构、或对黑板/节点做受控编辑时使用。 VI: Shader Graph: tạo graph/subgraph, inspect blackboard, node editing, property. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # ShaderGraph Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Shader Graph: tạo graph/subgraph, inspect blackboard, node editing, property`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Shader Graph asset workflows for Unity 2022.3+ with source-backed template handling, MultiJson inspection, and constrained internal-editor reflection writes.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - Query skills (`shadergraph_list_templates`, `shadergraph_list_assets`, `shadergraph_get_info`, `shadergraph_get_structure`, `shadergraph_list_supported_nodes`, `shadergraph_list_properties`, `shadergraph_list_keywords`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - All other mutators (create graph / subgraph, add/move/connect/disconnect node, set node defaults/settings, add/update property/keyword, reimport) are `SkillMode.FullAuto` — under **Approval** they need user grant (grant triggers one server-side execute returning the result); under **Auto** / **Bypass** they execute directly.
@@ -21,9 +29,9 @@ This module reaches into `UnityEditor.ShaderGraph` and `UnityEditor.ShaderGraph.
 - If a Shader Graph package update changes internal types or `MultiJson` schema, mutators may fail or silently no-op until the registry is updated.
 - If a skill returns an error mentioning a reflection / type lookup failure, do not retry with different argument shapes — report the version mismatch and stop.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Routing**:
+**Routing / Điều hướng**:
 - HLSL text shaders: use `shader_*`
 - Shader Graph / Sub Graph assets: use this module
 - Source-anchored design guidance before proposing graph architecture: load [shadergraph-design](../shadergraph-design/SKILL.md)
@@ -112,7 +120,7 @@ Remove a graph keyword.
 ### `shadergraph_reimport`
 Force reimport of a Shader Graph asset after external edits.
 
-## Workflow
+## Workflow / Quy trình
 
 1. Create or locate the target graph.
 2. Read `shadergraph_get_structure`.

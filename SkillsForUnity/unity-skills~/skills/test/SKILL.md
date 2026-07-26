@@ -1,13 +1,21 @@
 ---
 name: unity-test
-description: Run Unity Test Runner operations asynchronously — run/discover/list/cancel tests, poll job results, and create test templates. Use when running EditMode/PlayMode tests, discovering or listing tests, polling async test results, or scaffolding test files, even if the user just says "跑测试" or "单元测试". 异步执行 Unity Test Runner 操作(运行/发现/列出/取消测试、轮询任务结果、创建测试模板);当用户要运行 EditMode/PlayMode 测试、发现或列出测试、轮询异步测试结果、或生成测试文件时使用。
+description: "Run Unity Test Runner operations asynchronously — run/discover/list/cancel tests, poll job results, and create test templates. Use when running EditMode/PlayMode tests, discovering or listing tests, polling async test results, or scaffolding test files, even if the user just says \"跑测试\" or \"单元测试\". 异步执行 Unity Test Runner 操作(运行/发现/列出/取消测试、轮询任务结果、创建测试模板);当用户要运行 EditMode/PlayMode 测试、发现或列出测试、轮询异步测试结果、或生成测试文件时使用。 VI: Unity Test Runner: chạy test, tạo editmode/playmode test, discover test, poll job. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Test Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Unity Test Runner: chạy test, tạo editmode/playmode test, discover test, poll job`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Run and manage Unity tests.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**: 只读 skill（`test_get_result` / `test_list` / `test_discover_get_result` / `test_get_last_result` / `test_list_categories` / `test_smoke_skills` / `test_get_summary`，标 `SkillMode.SemiAuto`）直接执行；执行/发现/创建型 skill（`test_run` / `test_run_by_name` / `test_discover_start` / `test_cancel` / `test_create_editmode` / `test_create_playmode`，默认 `SkillMode.FullAuto`）需用户 grant，grant 后服务端一步执行返结果（job 立即排进队列）。
 - **Auto / Bypass**: 直接执行。
@@ -18,7 +26,7 @@ Run and manage Unity tests.
   Approval 模式下这 4 个返 `MODE_FORBIDDEN`，仅 Bypass 或 Allowlist 命中可绕过。注意：`test_run(testMode="PlayMode")` / `test_run_by_name` 会让 Unity TestRunner 切入 PlayMode；`test_create_editmode` / `test_create_playmode` 落盘新的 .cs 文件后会触发 Domain Reload。
 - **异步约定**：`test_run` / `test_run_by_name` / `test_discover_start` / `test_create_*` 立即返回 `jobId`；用 `test_get_result(jobId)` / `test_discover_get_result(jobId)` 轮询；Unity TestRunner 串行化，**正在跑测试时不要再起第二个 `test_run`**。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `test_run_all` does not exist → use `test_run` or `test_run_by_name`
 - `test_create_template` does not exist → use `test_create_editmode` or `test_create_playmode`
 - `test_get_status` does not exist → use `test_get_result` with `jobId` from test run
@@ -26,7 +34,7 @@ Run and manage Unity tests.
 - Unity Test Runner is serialized here: do not start a second `test_run` while another test job is still active
 - Prefer `unity_skills.get_skills(category="Test")` or `GET /skills/schema` for exact signatures instead of guessing from memory
 
-**Routing**:
+**Routing / Điều hướng**:
 - For compile error checking → use `debug` module's `debug_check_compilation`
 - For test script creation → `test_create_editmode` / `test_create_playmode`, then modify via `script` module
 - For broad regression probes across many skills → `test_smoke_skills`, which uses transient probes to avoid polluting workflow/batch persistence
@@ -35,31 +43,31 @@ Run and manage Unity tests.
 
 ### `test_list`
 List available tests via Unity Test Runner async discovery. **Returns `pendingDiscovery=true` + `discoveryJobId` on first call (cache miss)** — poll `test_discover_get_result(jobId)` then retry `test_list`.
-**Parameters:**
+**Parameters / Tham số:**
 - `testMode` (string, optional): EditMode or PlayMode. Default: EditMode.
 - `limit` (int, optional): Max tests to list. Default: 100.
 
-**Returns:** `{ success, testMode, count, tests, pendingDiscovery, discoveryJobId, discoveryStatus }`
+**Returns / Trả về:** `{ success, testMode, count, tests, pendingDiscovery, discoveryJobId, discoveryStatus }`
 
 ### `test_run`
 Run Unity tests asynchronously. Returns a `jobId` immediately; poll with `test_get_result(jobId)`.
-**Parameters:**
+**Parameters / Tham số:**
 - `testMode` (string, optional): EditMode or PlayMode. Default: EditMode.
-**Returns:** `{ success, status, jobId, kind, testMode, filter, message }`
+**Returns / Trả về:** `{ success, status, jobId, kind, testMode, filter, message }`
 
 ### `test_get_result`
 Get the result of a test run.
-**Parameters:**
+**Parameters / Tham số:**
 - `jobId` (string, required): Job ID from `test_run` / `test_run_by_name`.
 
-**Returns:** `{ success, jobId, status, totalTests, passedTests, failedTests, skippedTests, inconclusiveTests, otherTests, failedTestNames, failedTestDetails, elapsedSeconds, resultSummary, error }` — each failure detail includes `name`, `resultState`, `message`, `stackTrace`, `durationSeconds`, and `output`.
+**Returns / Trả về:** `{ success, jobId, status, totalTests, passedTests, failedTests, skippedTests, inconclusiveTests, otherTests, failedTestNames, failedTestDetails, elapsedSeconds, resultSummary, error }` — each failure detail includes `name`, `resultState`, `message`, `stackTrace`, `durationSeconds`, and `output`.
 
 ### `test_cancel`
 Cancel a running test job if supported (Unity TestRunner has no hard cancel — best-effort).
-**Parameters:**
+**Parameters / Tham số:**
 - `jobId` (string, required): Job ID to cancel.
 
-**Returns:** `{ success, jobId, status, cancelled, note, warnings }`
+**Returns / Trả về:** `{ success, jobId, status, cancelled, note, warnings }`
 
 ### `test_discover_start`
 Start asynchronous Unity Test Runner discovery and return a discovery `jobId`. Use this directly when you want explicit control over discovery; otherwise `test_list` / `test_list_categories` will trigger it on cache miss.
@@ -68,7 +76,7 @@ Start asynchronous Unity Test Runner discovery and return a discovery `jobId`. U
 |-----------|------|----------|---------|-------------|
 | testMode | string | No | EditMode | EditMode or PlayMode |
 
-**Returns:** `{ success, status, jobId, kind, testMode, message }`
+**Returns / Trả về:** `{ success, status, jobId, kind, testMode, message }`
 
 ### `test_discover_get_result`
 Get the result of an asynchronous Unity Test Runner discovery job.
@@ -78,7 +86,7 @@ Get the result of an asynchronous Unity Test Runner discovery job.
 | jobId | string | Yes | - | Discovery job ID |
 | limit | int | No | 100 | Max tests to return |
 
-**Returns:** `{ success, jobId, status, testMode, discoveryMode, count, tests, error }`
+**Returns / Trả về:** `{ success, jobId, status, testMode, discoveryMode, count, tests, error }`
 
 ### `test_run_by_name`
 Run specific tests by class or method name.
@@ -88,14 +96,14 @@ Run specific tests by class or method name.
 | testName | string | Yes | - | Test class or method name to run |
 | testMode | string | No | EditMode | EditMode or PlayMode |
 
-**Returns:** `{ success, jobId, testName, testMode }`
+**Returns / Trả về:** `{ success, jobId, testName, testMode }`
 
 ### `test_get_last_result`
 Get the most recent test run result.
 
 No parameters.
 
-**Returns:** `{ jobId, status, total, passed, failed, skipped, inconclusive, other, failedNames }`
+**Returns / Trả về:** `{ jobId, status, total, passed, failed, skipped, inconclusive, other, failedNames }`
 
 ### `test_list_categories`
 List test categories via Unity Test Runner async discovery. Same cache-miss / poll pattern as `test_list`.
@@ -104,7 +112,7 @@ List test categories via Unity Test Runner async discovery. Same cache-miss / po
 |-----------|------|----------|---------|-------------|
 | testMode | string | No | EditMode | EditMode or PlayMode |
 
-**Returns:** `{ success, count, categories, pendingDiscovery, discoveryJobId, discoveryStatus }`
+**Returns / Trả về:** `{ success, count, categories, pendingDiscovery, discoveryJobId, discoveryStatus }`
 
 ### `test_smoke_skills`
 Run a reusable smoke test across registered skills.
@@ -118,7 +126,7 @@ Run a reusable smoke test across registered skills.
 | includeMutating | bool | No | true | Include mutating skills via dryRun smoke testing |
 | limit | int | No | 0 | Max skills to inspect; 0 means all |
 
-**Returns:** `{ success, totalSkills, executedCount, dryRunCount, failureCount, results }`
+**Returns / Trả về:** `{ success, totalSkills, executedCount, dryRunCount, failureCount, results }`
 
 ### `test_create_editmode`
 Create an EditMode test script template. Writes the .cs file synchronously and returns a compile-monitor `jobId`; the script create **will trigger a Domain Reload**, so the server may be temporarily unavailable — `serverAvailability` carries the transient-unavailable hint.
@@ -128,7 +136,7 @@ Create an EditMode test script template. Writes the .cs file synchronously and r
 | testName | string | Yes | - | Name of the test class to create |
 | folder | string | No | Assets/Tests/Editor | Folder path for the test script |
 
-**Returns:** `{ success, status, path, testName, jobId, serverAvailability }`
+**Returns / Trả về:** `{ success, status, path, testName, jobId, serverAvailability }`
 
 ### `test_create_playmode`
 Create a PlayMode test script template. Writes the .cs file synchronously and returns a compile-monitor `jobId`; same Domain Reload + transient-unavailable note as `test_create_editmode`.
@@ -138,14 +146,14 @@ Create a PlayMode test script template. Writes the .cs file synchronously and re
 | testName | string | Yes | - | Name of the test class to create |
 | folder | string | No | Assets/Tests/Runtime | Folder path for the test script |
 
-**Returns:** `{ success, status, path, testName, jobId, serverAvailability }`
+**Returns / Trả về:** `{ success, status, path, testName, jobId, serverAvailability }`
 
 ### `test_get_summary`
 Get aggregated test summary across all runs.
 
 No parameters.
 
-**Returns:** `{ success, totalRuns, completedRuns, totalPassed, totalFailed, totalSkipped, totalInconclusive, totalOther, allFailedTests }`
+**Returns / Trả về:** `{ success, totalRuns, completedRuns, totalPassed, totalFailed, totalSkipped, totalInconclusive, totalOther, allFailedTests }`
 
 ---
 ## Minimal Example

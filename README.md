@@ -31,13 +31,14 @@ This project is a deep refactoring and feature extension based on the excellent 
 ## 🚀 Core Features
 
 - 🛠️ **740 REST Skills Comprehensive Toolkit**: Includes 52 functional source modules plus 23 advisory design modules, with Batch operations for multi-object control.
-- ⚡ **Revolutionary Efficiency Boost (v2.0.1+)**: Schema caching + exponential backoff polling + BATCH-FIRST guidance → **Token consumption ↓ 96%**, **simple tasks 4-6 calls → 1 call (↓ 75-83%)**. Current: v2.2.1.
+- ⚡ **Revolutionary Efficiency Boost (v2.0.1+)**: Schema caching + exponential backoff polling + BATCH-FIRST guidance → **Token consumption ↓ 96%**, **simple tasks 4-6 calls → 1 call (↓ 75-83%)**. Current: v2.2.2.
 - 🔐 **Three-Tier Permission Modes (v1.9.0+)**: Approval / Auto / Bypass with dual approval channels (Dialog / Panel), aligned with Claude Code permission modes; zero-impact upgrade for existing users.
 - 🤖 **4 Major IDEs Native Support**: Claude Code / Antigravity / Codex / Cursor — one-click install and use.
 - 🛡️ **Transactional Atomicity**: Failed operations auto-rollback, leaving scenes clean and safe.
 - 🌍 **Multi-Instance Simultaneous Control**: Automatic port discovery and global registry for controlling multiple Unity projects at once.
 - 🔗 **Ultra-Stable Long Connections**: Configurable request timeout (default 15 minutes), automatic recovery after Domain Reload, with retry hints during script compilation/asset updates.
 - 🛡️ **Anti-Hallucination Guardrails**: Each Skill module includes DO NOT lists and routing rules to prevent calls to nonexistent commands or parameter errors.
+- 🌏 **Trilingual Skill Routing (v2.2.2+)**: All 71 module docs carry English / 中文 / Tiếng Việt trigger keywords and per-module Vietnamese agent notes, so AI routes correctly no matter which language the user speaks.
 
 ---
 

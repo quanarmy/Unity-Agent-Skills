@@ -1,9 +1,15 @@
 ---
 name: unity-project-scout
-description: Advises on reconnoitering an existing Unity project — check Unity version, packages, asmdef layout, folders, and coding patterns before proposing changes. Use when first approaching an unfamiliar project, before proposing structural changes, or auditing the existing setup, even if the user just says "看看这个项目" or "项目用了什么". 为侦查现有 Unity 项目提供建议(在提改动前先查 Unity 版本、包、asmdef 结构、目录、编码风格);当用户要初次接触陌生项目、在提结构性改动前、或盘点现有配置时使用。
+description: "Advises on reconnoitering an existing Unity project — check Unity version, packages, asmdef layout, folders, and coding patterns before proposing changes. Use when first approaching an unfamiliar project, before proposing structural changes, or auditing the existing setup, even if the user just says \"看看这个项目\" or \"项目用了什么\". 为侦查现有 Unity 项目提供建议(在提改动前先查 Unity 版本、包、asmdef 结构、目录、编码风格);当用户要初次接触陌生项目、在提结构性改动前、或盘点现有配置时使用。 VI: khảo sát project: Unity version, packages, asmdef, folder structure, coding patterns trước khi sửa. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Project Scout
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `khảo sát project: Unity version, packages, asmdef, folder structure, coding patterns trước khi sửa`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Use this before recommending architecture changes in an existing project.
 
@@ -29,7 +35,7 @@ Collect only the information needed to avoid clashing with the current project:
 - Script/file search for patterns
 - Local inspection of `Packages/manifest.json`, `Assets/`, and `*.asmdef`
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Technical baseline
 - Existing architectural signals
@@ -38,7 +44,7 @@ Collect only the information needed to avoid clashing with the current project:
 - Constraints for future suggestions
 - Unknowns that still need confirmation
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 

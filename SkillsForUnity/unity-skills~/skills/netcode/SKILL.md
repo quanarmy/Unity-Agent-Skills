@@ -1,18 +1,26 @@
 ---
 name: unity-netcode
-description: Set up Netcode for GameObjects (NGO 2.x) multiplayer — configure NetworkManager, NetworkObjects/prefabs, spawning, and host/server/client lifecycle. Use when scaffolding multiplayer, registering network prefabs, wiring spawn logic, or starting host/server/client, even if the user just says "联机" or "多人游戏". 搭建 Netcode for GameObjects(NGO 2.x)多人联机(配置 NetworkManager、NetworkObject/预制体、生成、host/server/client 生命周期);当用户要搭建多人联机、注册网络预制体、连接生成逻辑或启动 host/server/client 时使用。
+description: "Set up Netcode for GameObjects (NGO 2.x) multiplayer — configure NetworkManager, NetworkObjects/prefabs, spawning, and host/server/client lifecycle. Use when scaffolding multiplayer, registering network prefabs, wiring spawn logic, or starting host/server/client, even if the user just says \"联机\" or \"多人游戏\". 搭建 Netcode for GameObjects(NGO 2.x)多人联机(配置 NetworkManager、NetworkObject/预制体、生成、host/server/client 生命周期);当用户要搭建多人联机、注册网络预制体、连接生成逻辑或启动 host/server/client 时使用。 VI: Netcode for GameObjects: NetworkObject, NetworkBehaviour, RPC, NetworkVariable, spawn, host/client/server. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Netcode for GameObjects Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Netcode for GameObjects: NetworkObject, NetworkBehaviour, RPC, NetworkVariable, spawn, host/client/server`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Automation for Netcode for GameObjects (NGO) multiplayer setup and operations. Every skill is source-verified against NGO 2.x; when the package is absent, each skill returns a `NoNetcode()` error with install instructions.
 
 > **Requires**: `com.unity.netcode.gameobjects` (2.x), Unity 6000.0+.
 > **Strongly recommended**: before calling any `netcode_*` skill, load [netcode-design](../netcode-design/SKILL.md). NGO lifecycle and permission rules are strict; skills alone cannot prevent incorrect business code.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query/list/info skills (`netcode_check_setup`, `netcode_get_manager_info`, `netcode_get_transport_info`, `netcode_list_network_objects`, `netcode_get_network_object_info`, `netcode_list_network_prefabs`, `netcode_list_network_behaviours`, `netcode_get_spawn_manager_info`, `netcode_get_scene_manager_info`, `netcode_get_status`) run directly. Mutators (create/configure/attach/add) are FullAuto — on `MODE_RESTRICTED`, run the grant protocol.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - Auto-forbidden in this module:
@@ -23,14 +31,14 @@ Automation for Netcode for GameObjects (NGO) multiplayer setup and operations. E
   These are reachable only under Bypass mode or via a user-managed Allowlist entry; the grant flow returns `MODE_FORBIDDEN`. Runtime control + Behaviour-script generation are the practical reason this module is gated.
 - When `com.unity.netcode.gameobjects` is missing, every skill returns a `NoNetcode()` error with install instructions.
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `netcode_spawn_object` / `netcode_spawn_player` — do not exist. Spawn must happen in runtime code (NetworkBehaviour) via `.Spawn()` or `NetworkManager.SpawnManager.InstantiateAndSpawn`. Skills do not proxy Spawn because Spawn requires a running NetworkManager.
 - `netcode_register_scene` — does not exist. Scene registration goes through Build Settings + `EnableSceneManagement`. This module only exposes `netcode_configure_scene_management` for reading/writing the config.
 - `netcode_set_tick_rate` / `netcode_set_protocol` as standalone skills — do not exist. Use `netcode_configure_manager` for all NetworkConfig edits.
 - Do not assume `netcode_start_host` works in Edit Mode. All Runtime control skills require PlayMode.
 - Do not assume `netcode_add_to_prefabs_list` automatically attaches a `NetworkObject` component. Call `netcode_add_network_object` first.
 
-**Routing**:
+**Routing / Điều hướng**:
 - Plain GameObject hierarchy creation → `gameobject`
 - Attach NetworkObject / NetworkTransform / other networking components → this module
 - Generic player-prefab components (Rigidbody / Collider / Animator) → `component`

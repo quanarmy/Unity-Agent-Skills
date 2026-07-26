@@ -1,13 +1,21 @@
 ---
 name: unity-batch
-description: Unified batch and async-job orchestration — batch queries, preview-confirm-execute mutations, background job scheduling and polling, and bulk scene operations. Use when an operation touches many objects at once, running or polling long async jobs, or applying preview-then-commit bulk edits, even if the user just says "批量" or "一次性改很多". 统一的批量与异步任务编排(批量查询、预览-确认-执行变更、后台任务调度与轮询、批量场景操作);当用户要一次性操作大量对象、运行或轮询长时异步任务、或执行先预览后提交的批量编辑时使用。
+description: "Unified batch and async-job orchestration — batch queries, preview-confirm-execute mutations, background job scheduling and polling, and bulk scene operations. Use when an operation touches many objects at once, running or polling long async jobs, or applying preview-then-commit bulk edits, even if the user just says \"批量\" or \"一次性改很多\". 统一的批量与异步任务编排(批量查询、预览-确认-执行变更、后台任务调度与轮询、批量场景操作);当用户要一次性操作大量对象、运行或轮询长时异步任务、或执行先预览后提交的批量编辑时使用。 VI: batch/job: chạy nhiều skill, job_status, job_wait, progress, report, tác vụ async. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Batch Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `batch/job: chạy nhiều skill, job_status, job_wait, progress, report, tác vụ async`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Batch workflow orchestration for query, preview, execution, reports, and async jobs.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 本模块共 22 个 skill，按 Operation 区分为两类：
 
@@ -17,13 +25,13 @@ Batch workflow orchestration for query, preview, execution, reports, and async j
 
 > 注意：`batch_execute(confirmToken)` 本身放行，但它执行的 preview 内容可能包括对场景对象的删除/改属性等高影响动作 —— 请确保 `batch_preview_*` 返回的 sample/risk 字段已审阅。confirmToken 一次性消费、过期需重新 preview。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - Always call a `batch_preview_*` skill first — `batch_execute` requires a `confirmToken` from a preview, it cannot be called directly
 - `batch_run` does not exist → use `batch_execute(confirmToken)`
 - `job_poll` / `job_result` do not exist → use `job_status` to check and retrieve async job results
 - `batch_delete` / `batch_move` do not exist → use `asset` module for asset-level operations
 
-**Routing**:
+**Routing / Điều hướng**:
 - For asset-level bulk operations (move, copy, delete) → `asset` module
 - For workflow session/task undo tracking → `workflow` module
 - For scene object validation → `batch_validate_scene_objects` (this module)

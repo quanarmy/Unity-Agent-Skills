@@ -1,9 +1,15 @@
 ---
 name: unity-unitask-design
-description: Source-anchored design rules for Cysharp UniTask 2.5.10 (Unity 2018.4+) — struct semantics, PlayerLoop timing, cancellation, composition, conversion, async enumerables, triggers, and pitfalls. Use when writing or reviewing async UniTask code, choosing PlayerLoopTiming, handling CancellationToken, or composing WhenAll/WhenAny, even if the user just says "异步" or "零分配async". 为 Cysharp UniTask 2.5.10(Unity 2018.4+)提供源码锚定的设计规则(struct 语义、PlayerLoop 时机、取消、组合、转换、异步流、触发器、陷阱);当用户要编写或审查 async UniTask 代码、选择 PlayerLoopTiming、处理 CancellationToken、或组合 WhenAll/WhenAny 时使用。
+description: "Source-anchored design rules for Cysharp UniTask 2.5.10 (Unity 2018.4+) — struct semantics, PlayerLoop timing, cancellation, composition, conversion, async enumerables, triggers, and pitfalls. Use when writing or reviewing async UniTask code, choosing PlayerLoopTiming, handling CancellationToken, or composing WhenAll/WhenAny, even if the user just says \"异步\" or \"零分配async\". 为 Cysharp UniTask 2.5.10(Unity 2018.4+)提供源码锚定的设计规则(struct 语义、PlayerLoop 时机、取消、组合、转换、异步流、触发器、陷阱);当用户要编写或审查 async UniTask 代码、选择 PlayerLoopTiming、处理 CancellationToken、或组合 WhenAll/WhenAny 时使用。 VI: thiết kế UniTask: PlayerLoopTiming, CancellationToken, WhenAll/WhenAny, async enumerable. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # UniTask - Design Rules
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `thiết kế UniTask: PlayerLoopTiming, CancellationToken, WhenAll/WhenAny, async enumerable`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Advisory module. Every rule is distilled from Cysharp UniTask source at:
 - **2.5.10** — `com.cysharp.unitask@2.5.10` (Unity 2018.4 baseline; actively used with 2022.3 / Unity 6)

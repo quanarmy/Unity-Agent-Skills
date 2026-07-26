@@ -1,13 +1,21 @@
 ---
 name: unity-decal
-description: Create and configure URP Decal Projectors plus DecalRendererFeature setup — project decals onto surfaces and wire the renderer feature. Use when adding decals in URP, configuring a Decal Projector, or enabling the Decal Renderer Feature, even if the user just says "贴花" or "decal". 创建与配置 URP Decal Projector 并设置 DecalRendererFeature(将贴花投射到表面、接入渲染器特性);当用户要在 URP 中添加贴花、配置 Decal Projector 或启用 Decal Renderer Feature 时使用。
+description: "Create and configure URP Decal Projectors plus DecalRendererFeature setup — project decals onto surfaces and wire the renderer feature. Use when adding decals in URP, configuring a Decal Projector, or enabling the Decal Renderer Feature, even if the user just says \"贴花\" or \"decal\". 创建与配置 URP Decal Projector 并设置 DecalRendererFeature(将贴花投射到表面、接入渲染器特性);当用户要在 URP 中添加贴花、配置 Decal Projector 或启用 Decal Renderer Feature 时使用。 VI: decal/đề can URP: Decal Projector, Decal Renderer Feature, material decal. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Decal Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `decal/đề can URP: Decal Projector, Decal Renderer Feature, material decal`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 URP Decal Projector creation and configuration (URP only; HDRP decal APIs are not covered here).
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - Query skills (`decal_get_info`, `decal_find_all`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - Mutating skills (`decal_create`, `decal_set_properties`, `decal_set_properties_batch`, `decal_ensure_renderer_feature`) are `SkillMode.FullAuto` — under **Approval** they need user grant (grant triggers one server-side execute returning the result); under **Auto** / **Bypass** they execute directly.
@@ -17,9 +25,9 @@ URP Decal Projector creation and configuration (URP only; HDRP decal APIs are no
 
 This module is compiled against `com.unity.render-pipelines.universal` (`URP`). When URP is not installed, **every** skill returns a stub `{ error: "Universal Render Pipeline package … is not installed." }` (`RenderPipelineSkillsCommon.NoURP()`). The stub is a diagnostic payload, not a permission denial — it does **not** require grant and is **not** treated as NeverInSemi.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Routing**:
+**Routing / Điều hướng**:
 - For renderer feature management in general: `urp`
 - For DecalProjector scene operations: this module
 

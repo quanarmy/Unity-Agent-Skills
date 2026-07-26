@@ -1,13 +1,19 @@
 ---
 name: unity-inspector
-description: Advises on Unity Inspector authoring UX — SerializeField usage, Tooltip/Header organization, validation, and custom Inspector display. Use when designing how a component appears in the Inspector, organizing serialized fields, adding tooltips/headers, or improving authoring UX, even if the user just says "Inspector怎么设计" or "字段怎么显示". 为 Unity Inspector 编写体验提供建议(SerializeField 用法、Tooltip/Header 组织、校验、自定义 Inspector 显示);当用户要设计组件在 Inspector 的呈现、组织序列化字段、添加提示/分组或改善编辑体验时使用。
+description: "Advises on Unity Inspector authoring UX — SerializeField usage, Tooltip/Header organization, validation, and custom Inspector display. Use when designing how a component appears in the Inspector, organizing serialized fields, adding tooltips/headers, or improving authoring UX, even if the user just says \"Inspector怎么设计\" or \"字段怎么显示\". 为 Unity Inspector 编写体验提供建议(SerializeField 用法、Tooltip/Header 组织、校验、自定义 Inspector 显示);当用户要设计组件在 Inspector 的呈现、组织序列化字段、添加提示/分组或改善编辑体验时使用。 VI: Inspector UX: SerializeField, Tooltip, Header, validation, custom editor authoring. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Inspector Design
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Inspector UX: SerializeField, Tooltip, Header, validation, custom editor authoring`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
+
 Use this skill when scripts need to be easier to author, configure, and review in the Inspector.
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 
@@ -31,7 +37,7 @@ Use this skill when scripts need to be easier to author, configure, and review i
 - Are debug-only fields separated from authoring fields?
 - Will another person understand this script from the Inspector alone?
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Field exposure strategy
 - Recommended attributes

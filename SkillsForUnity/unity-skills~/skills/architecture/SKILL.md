@@ -1,13 +1,19 @@
 ---
 name: unity-architecture
-description: Advises on Unity gameplay and system architecture — module boundaries, decoupling, scene composition, SOLID structure, refactor direction. Use when planning how to organize code, splitting responsibilities, reducing coupling, or choosing a refactor direction, before writing structural code. 为 Unity 游戏与系统架构提供建议(模块边界、解耦、场景组织、SOLID、重构方向);当用户要规划代码结构、划分职责、降低耦合或决定重构方向时使用。
+description: "Advises on Unity gameplay and system architecture — module boundaries, decoupling, scene composition, SOLID structure, refactor direction. Use when planning how to organize code, splitting responsibilities, reducing coupling, or choosing a refactor direction, before writing structural code. 为 Unity 游戏与系统架构提供建议(模块边界、解耦、场景组织、SOLID、重构方向);当用户要规划代码结构、划分职责、降低耦合或决定重构方向时使用。 VI: kiến trúc Unity: module boundary, decoupling, bootstrap, SOLID, hướng refactor. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Architecture Advisor
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `kiến trúc Unity: module boundary, decoupling, bootstrap, SOLID, hướng refactor`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
+
 Use this before generating lots of gameplay scripts or when the user asks for a cleaner architecture.
 
-## Workflow
+## Workflow / Quy trình
 
 1. Identify scope: prototype, small game, or long-lived project.
 2. Define the core loop and the minimum runtime systems needed.
@@ -19,7 +25,7 @@ Use this before generating lots of gameplay scripts or when the user asks for a 
    - view/presentation layer
 5. Call out what should stay simple now vs what is worth abstracting.
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 When using this skill, structure the advice as:
 
@@ -31,7 +37,7 @@ When using this skill, structure the advice as:
 - Performance risks: only the hot paths that matter
 - Do now / skip now: avoid over-engineering
 
-## Default Guidance
+## Default Guidance / Hướng dẫn mặc định
 
 - Prefer thin `MonoBehaviour` scripts as composition bridges.
 - Put reusable gameplay rules in plain C# classes when possible.
@@ -66,7 +72,7 @@ void Update() {
 ```
 A missing guard is the difference between "doesn't run yet" (safe) and "runs with stale/null data and silently corrupts state" (debug nightmare). The ECS equivalent is `state.RequireForUpdate<Config>()` in `OnCreate`, which turns the precondition into a system-level invariant. *Source: `Dots101/Entities101/Assets/HelloCube/3. Prefabs/SpawnSystem.cs:17-19` — the system does not update unless a `Spawner` entity exists.*
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 

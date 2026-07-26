@@ -1,9 +1,15 @@
 ---
 name: unity-asmdef
-description: Advises on Unity assembly definitions (asmdef) — module boundaries, dependency graphs, editor/runtime/test splits, and faster compile times. Use when planning asmdef layout, untangling assembly dependencies, speeding up compilation, or splitting editor and runtime code, even if the user just says "编译太慢" or "程序集怎么分". 为 Unity 程序集定义(asmdef)提供建议(模块边界、依赖关系、editor/runtime/test 拆分、加快编译);当用户要规划 asmdef 结构、理顺程序集依赖、加速编译或拆分编辑器与运行时代码时使用。
+description: "Advises on Unity assembly definitions (asmdef) — module boundaries, dependency graphs, editor/runtime/test splits, and faster compile times. Use when planning asmdef layout, untangling assembly dependencies, speeding up compilation, or splitting editor and runtime code, even if the user just says \"编译太慢\" or \"程序集怎么分\". 为 Unity 程序集定义(asmdef)提供建议(模块边界、依赖关系、editor/runtime/test 拆分、加快编译);当用户要规划 asmdef 结构、理顺程序集依赖、加速编译或拆分编辑器与运行时代码时使用。 VI: asmdef: tách assembly, dependency, editor/runtime/test split, compile time. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity asmdef Advisor
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `asmdef: tách assembly, dependency, editor/runtime/test split, compile time`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Use this skill when the project is large enough that compile boundaries and dependency direction matter.
 
@@ -16,7 +22,7 @@ Use this skill when the project is large enough that compile boundaries and depe
 - compile times are becoming noticeable
 - tests should be isolated cleanly
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Whether `asmdef` is justified now
 - Proposed assemblies
@@ -25,13 +31,13 @@ Use this skill when the project is large enough that compile boundaries and depe
 - Migration steps
 - Risks or churn to avoid
 
-## Default Guidance
+## Default Guidance / Hướng dẫn mặc định
 
 - Prefer a few meaningful assemblies over many tiny ones.
 - Split editor code from runtime first.
 - Keep the dependency graph directional and shallow.
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 

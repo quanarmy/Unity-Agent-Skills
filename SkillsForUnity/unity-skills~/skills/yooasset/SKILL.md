@@ -1,18 +1,26 @@
 ---
 name: unity-yooasset
-description: Automate YooAsset hot-update and asset bundles — build bundles, run Editor simulate builds, manage Collector groups, analyze BuildReport, and validate runtime. Use when building or simulating YooAsset bundles, configuring collectors, or validating hot-update assets, even if the user just says "热更" or "打AB包". 自动化 YooAsset 热更新与资源包(构建 bundle、编辑器模拟构建、管理 Collector 分组、分析 BuildReport、运行时校验);当用户要构建或模拟 YooAsset 资源包、配置 collector、或校验热更资源时使用。
+description: "Automate YooAsset hot-update and asset bundles — build bundles, run Editor simulate builds, manage Collector groups, analyze BuildReport, and validate runtime. Use when building or simulating YooAsset bundles, configuring collectors, or validating hot-update assets, even if the user just says \"热更\" or \"打AB包\". 自动化 YooAsset 热更新与资源包(构建 bundle、编辑器模拟构建、管理 Collector 分组、分析 BuildReport、运行时校验);当用户要构建或模拟 YooAsset 资源包、配置 collector、或校验热更资源时使用。 VI: YooAsset hot-update: package, collector, build bundle, report, runtime validate, downloader. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity YooAsset Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `YooAsset hot-update: package, collector, build bundle, report, runtime validate, downloader`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Editor-side automation for the YooAsset hot-update framework — build pipeline orchestration, Collector configuration CRUD, BuildReport analysis, PlayMode runtime validation, and companion YooAsset tools. Every skill wraps a concrete YooAsset Editor/runtime API path validated against 2.3.18 source. When the package is absent, every skill except `yooasset_check_installed` returns a `NoYooAsset()` error with install instructions.
 
 > **Requires**: `com.tuyoogame.yooasset` **≥ 2.3.15**, Unity 2022.3+ (validated against 2.3.18).
 > **Strongly recommended**: before writing ANY YooAsset runtime code, load [yooasset-design](../yooasset-design/SKILL.md). PlayMode / parameter-class / handle-lifecycle pitfalls are strict, and only the advisory module surfaces them.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query/list/read skills (`yooasset_check_installed`, `yooasset_get_default_paths`, `yooasset_get_build_settings`, `yooasset_list_collector_packages`, `yooasset_list_collector_rules`, `yooasset_list_assetart_scanners`, `yooasset_runtime_get_validation_result`, `yooasset_load_build_report`, `yooasset_list_report_bundles`, `yooasset_get_bundle_detail`, `yooasset_list_report_assets`, `yooasset_get_asset_detail`, `yooasset_get_dependency_graph`, `yooasset_compare_build_reports`, `yooasset_list_independ_assets`) run directly. Builders / Collector mutators / scanner runs / window-openers are FullAuto — on `MODE_RESTRICTED`, run the grant protocol.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - Auto-forbidden in this module:
@@ -22,14 +30,14 @@ Editor-side automation for the YooAsset hot-update framework — build pipeline 
   Reachable only under Bypass mode or via a user-managed Allowlist entry; the grant flow returns `MODE_FORBIDDEN`. Note `yooasset_build_bundles` runs heavy disk I/O but has no Reload/PlayMode flag, so it stays grantable.
 - When `com.tuyoogame.yooasset` is missing, every skill except `yooasset_check_installed` returns a `NoYooAsset()` error with install instructions.
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `yooasset_initialize` / `yooasset_load_asset` / `yooasset_create_downloader` — do NOT exist as general-purpose REST skills. Runtime APIs (`YooAssets.Initialize`, default-package `YooAssets.LoadAssetAsync`, `ResourcePackage.LoadAssetAsync`, `RequestPackageVersionAsync`, `CreateResourceDownloader`) belong in game code. Use [yooasset-design](../yooasset-design/SKILL.md) when writing runtime code.
 - `yooasset_modify_group` / `yooasset_delete_collector` / `yooasset_open_scanner_window` — wrong names. Use the exact schema names below or query `GET /skills/schema?category=YooAsset`.
 - `yooasset_install` — NOT a skill. Package install is a Package Manager user action.
 - Do NOT pass `timeout` to `yooasset_build_bundles` — the property was removed in YooAsset 2.3.16. Runtime watchdog now lives on `CacheFileSystemParameters.DOWNLOAD_WATCH_DOG_TIME` (runtime concern, not a build parameter).
 - Do NOT call `yooasset_build_bundles` while `EditorUserBuildSettings.isBuildingPlayer == true` — `BuildParameters.CheckBuildParameters` throws.
 
-**Routing**:
+**Routing / Điều hướng**:
 - Collector configuration (packages, groups, collectors, rules) → this module.
 - Actual bundle build + simulate + paths → this module.
 - Build report analysis (bundle size, asset list/detail, dependency graph, report compare, orphan) → this module.

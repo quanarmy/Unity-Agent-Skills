@@ -1,32 +1,40 @@
 ---
 name: unity-gameobject
-description: Create and manipulate GameObjects — create, delete, move, rotate, scale, parent, find, rename, batch-edit. Use when building or restructuring a scene hierarchy, spawning or removing objects, or adjusting transforms, even if the user doesn't say "GameObject". 创建与操控 GameObject(增删、移动、旋转、缩放、父子、查找、重命名、批量编辑);当用户要搭建或调整场景层级、新建或删除物体、修改 Transform 时使用。
+description: "Create and manipulate GameObjects — create, delete, move, rotate, scale, parent, find, rename, batch-edit. Use when building or restructuring a scene hierarchy, spawning or removing objects, or adjusting transforms, even if the user doesn't say \"GameObject\". 创建与操控 GameObject(增删、移动、旋转、缩放、父子、查找、重命名、批量编辑);当用户要搭建或调整场景层级、新建或删除物体、修改 Transform 时使用。 VI: vật thể/GameObject trong scene: tạo object, xoá object, đổi tên, di chuyển, xoay, scale, parent, bật tắt, đặt layer/tag, batch object. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity GameObject Skills
 
-> **BATCH-FIRST**: Use `*_batch` skills when operating on 2+ objects to reduce API calls from N to 1.
+## Ghi chú tiếng Việt cho agent
 
-## Operating Mode
+- Khi user nói tiếng Việt như: `vật thể/GameObject trong scene: tạo object, xoá object, đổi tên, di chuyển, xoay, scale, parent, bật tắt, đặt layer/tag, batch object`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `*_batch` skills when operating on 2+ objects to reduce API calls from N to 1.
+
+## Operating Mode / Chế độ quyền
 
 - **Approval**：本模块多为 `SkillMode.FullAuto`，调用需用户 grant；grant 后服务端一步执行并返结果。
 - **Auto / Bypass**：直接执行。
 - **含 NeverInSemi 高危 skill**：`gameobject_delete` / `gameobject_delete_batch`（标记 Operation.Delete）。这些在 Approval/Auto 下返 `MODE_FORBIDDEN`，仅 Bypass 或用户 Allowlist 命中可调。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `gameobject_move` / `gameobject_rotate` / `gameobject_set_scale` do not exist → use `gameobject_set_transform` (handles position, rotation, and scale together)
 - `gameobject_set_position` does not exist → use `gameobject_set_transform` with `posX/posY/posZ`
 - `gameobject_add_component` does not exist → use `component_add` (component module)
 - `gameobject_get_transform` does not exist → use `gameobject_get_info` (returns position/rotation/scale)
 
-**Routing**:
+**Routing / Điều hướng**:
 - To add/remove components → use `component` module
 - To set material/color → use `material` module
 - To search objects by name/tag/component → `gameobject_find` (this module) or `scene_find_objects` (scene module, SkillMode.SemiAuto)
 
 > **Object Targeting**: All single-object skills accept `entityId` (string, Unity 6000.4+ preferred — returned by all object skills), `name` (string), `instanceId` (int, Unity < 6000.4 preferred), and `path` (string, hierarchy path like "Parent/Child"). Provide at least one. Priority: `entityId > instanceId > path > name`. On Unity 6000.4+ use `entityId` — `instanceId` is reported as `0`. When only `name` is shown in a parameter table, `entityId`, `instanceId`, and `path` are also accepted.
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -61,7 +69,7 @@ Create a new GameObject (primitive or empty).
 | `parentInstanceId` | int | No | 0 | Parent instance ID |
 | `parentPath` | string | No | null | Parent hierarchy path |
 
-**Returns**: `{success, name, entityId, instanceId, path, parent, position}`
+**Returns / Trả về**: `{success, name, entityId, instanceId, path, parent, position}`
 
 ### gameobject_delete
 Delete a GameObject.
@@ -85,7 +93,7 @@ Duplicate a GameObject.
 | `instanceId` | int | No* | Instance ID |
 | `path` | string | No* | Hierarchy path |
 
-**Returns**: `{originalName, copyName, copyEntityId, copyInstanceId, copyPath}`
+**Returns / Trả về**: `{originalName, copyName, copyEntityId, copyInstanceId, copyPath}`
 
 ### gameobject_rename
 Rename a GameObject.
@@ -97,7 +105,7 @@ Rename a GameObject.
 | `instanceId` | int | No* | Instance ID |
 | `newName` | string | Yes | New name |
 
-**Returns**: `{success, oldName, newName, entityId, instanceId}`
+**Returns / Trả về**: `{success, oldName, newName, entityId, instanceId}`
 
 ### gameobject_find
 Find GameObjects matching criteria.
@@ -111,7 +119,7 @@ Find GameObjects matching criteria.
 | `useRegex` | bool | No | false | Use regex for name |
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{count, objects: [{name, entityId, instanceId, path, tag, layer, position}]}`
+**Returns / Trả về**: `{count, objects: [{name, entityId, instanceId, path, tag, layer, position}]}`
 
 ### gameobject_get_info
 Get detailed GameObject information.
@@ -123,7 +131,7 @@ Get detailed GameObject information.
 | `instanceId` | int | No* | Instance ID |
 | `path` | string | No* | Hierarchy path |
 
-**Returns**: `{name, entityId, instanceId, path, tag, layer, active, position, rotation, scale, parent, parentPath, childCount, children: [{name, entityId, instanceId, path}], components}`
+**Returns / Trả về**: `{name, entityId, instanceId, path, tag, layer, active, position, rotation, scale, parent, parentPath, childCount, children: [{name, entityId, instanceId, path}], components}`
 
 ### gameobject_set_transform
 Set position, rotation, and/or scale. Supports world / local / RectTransform spaces.
@@ -163,7 +171,7 @@ Set parent-child relationship.
 
 *At least one child identifier required; omit all parent identifiers to unparent
 
-**Returns**: `{success, child, childEntityId, parent, parentEntityId, newPath}`
+**Returns / Trả về**: `{success, child, childEntityId, parent, parentEntityId, newPath}`
 
 ### gameobject_set_active
 Enable or disable a GameObject.
@@ -178,7 +186,7 @@ Enable or disable a GameObject.
 
 *At least one identifier required
 
-**Returns**: `{success, name, entityId, active}`
+**Returns / Trả về**: `{success, name, entityId, active}`
 
 ### gameobject_set_sibling_index
 Set a GameObject's sibling index — its position among its parent's children, or among the scene's root objects when unparented. `index` is clamped into the valid range (`clamped: true` reports it).
@@ -193,7 +201,7 @@ Set a GameObject's sibling index — its position among its parent's children, o
 
 *At least one identifier required
 
-**Returns**: `{success, name, entityId, path, parent, previousIndex, index, clamped}`
+**Returns / Trả về**: `{success, name, entityId, path, parent, previousIndex, index, clamped}`
 
 ---
 
@@ -205,10 +213,9 @@ Create multiple GameObjects in one call.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
 **Item properties**: `name`, `primitiveType`, `x`, `y`, `z`, `rotX`, `rotY`, `rotZ`, `scaleX`, `scaleY`, `scaleZ`, `parentEntityId`, `parentName`, `parentInstanceId`, `parentPath`
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, instanceId, path, position}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, instanceId, path, position}]}`
 
 ```python
 unity_skills.call_skill("gameobject_create_batch", items=[
@@ -224,8 +231,7 @@ Delete multiple GameObjects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
 
 ```python
 # By names
@@ -250,8 +256,7 @@ Duplicate multiple GameObjects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, originalName, copyName, copyInstanceId, copyPath}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, originalName, copyName, copyInstanceId, copyPath}]}`
 
 ```python
 unity_skills.call_skill("gameobject_duplicate_batch", items=[
@@ -266,8 +271,7 @@ Rename multiple GameObjects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, oldName, newName, instanceId}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, oldName, newName, instanceId}]}`
 
 ```python
 unity_skills.call_skill("gameobject_rename_batch", items=[
@@ -282,14 +286,13 @@ Set transforms for multiple objects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
 **Item properties** (each item supports identifier + any subset of transform fields):
 - Identifier: `entityId` / `name` / `instanceId` / `path` (at least one required)
 - World: `posX`, `posY`, `posZ`, `rotX`, `rotY`, `rotZ`, `scaleX`, `scaleY`, `scaleZ`
 - Local: `localPosX`, `localPosY`, `localPosZ`
 - RectTransform (UI only): `anchoredPosX`, `anchoredPosY`, `anchorMinX`, `anchorMinY`, `anchorMaxX`, `anchorMaxY`, `pivotX`, `pivotY`, `sizeDeltaX`, `sizeDeltaY`, `width`, `height`
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, position, rotation, scale}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, position, rotation, scale}]}`
 
 ```python
 unity_skills.call_skill("gameobject_set_transform_batch", items=[
@@ -305,8 +308,7 @@ Toggle multiple objects. Each item supports identifier (`entityId` / `name` / `i
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, active}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, active}]}`
 
 ```python
 unity_skills.call_skill("gameobject_set_active_batch", items=[
@@ -321,8 +323,7 @@ Parent multiple objects. Each item supports `childEntityId`/`childName`/`childIn
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, child, parent}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, child, parent}]}`
 
 ```python
 unity_skills.call_skill("gameobject_set_parent_batch", items=[
@@ -338,8 +339,7 @@ Set layer for multiple objects. Each item supports identifier (`entityId` / `nam
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, layer}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, layer}]}`
 
 ```python
 unity_skills.call_skill("gameobject_set_layer_batch", items=[
@@ -354,8 +354,7 @@ Set tag for multiple objects. Each item supports identifier (`entityId` / `name`
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, tag}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, tag}]}`
 
 ```python
 unity_skills.call_skill("gameobject_set_tag_batch", items=[

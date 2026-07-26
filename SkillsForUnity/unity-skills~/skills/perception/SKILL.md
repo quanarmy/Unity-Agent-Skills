@@ -1,24 +1,32 @@
 ---
 name: unity-perception
-description: Read-only scene, project, and script analysis for AI coding context — analyze scene structure, detect the project stack, run health checks, and find hotspots. Use when gathering context before editing, understanding an unfamiliar scene or project, or auditing structure without making changes, even if the user just says "分析一下场景" or "看看项目结构". 只读的场景/项目/脚本分析,为 AI 编码提供上下文(分析场景结构、探测项目技术栈、健康检查、定位热点);当用户要在编辑前收集上下文、理解陌生场景或项目、或在不改动的前提下审查结构时使用。
+description: "Read-only scene, project, and script analysis for AI coding context — analyze scene structure, detect the project stack, run health checks, and find hotspots. Use when gathering context before editing, understanding an unfamiliar scene or project, or auditing structure without making changes, even if the user just says \"分析一下场景\" or \"看看项目结构\". 只读的场景/项目/脚本分析,为 AI 编码提供上下文(分析场景结构、探测项目技术栈、健康检查、定位热点);当用户要在编辑前收集上下文、理解陌生场景或项目、或在不改动的前提下审查结构时使用。 VI: phân tích scene/project: context, hierarchy describe, hotspot, stack detect, dependency graph. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Perception Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `phân tích scene/project: context, hierarchy describe, hotspot, stack detect, dependency graph`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Use this module for read-only scene and project analysis.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval / Auto / Bypass**: 本模块所有 skill（`scene_analyze` / `scene_summarize` / `scene_health_check` / `scene_component_stats` / `scene_find_hotspots` / `scene_tag_layer_stats` / `scene_performance_hints` / `scene_diff` / `hierarchy_describe` / `scene_context` / `scene_dependency_analyze` / `scene_spatial_query` / `scene_materials` / `scene_contract_validate` / `project_stack_detect` / `script_analyze` / `script_dependency_graph` / `scene_export_report`）都标 `Mode = SkillMode.SemiAuto`，三档模式下直接执行无需 grant。其中前 17 个同时标 `ReadOnly = true`。
 - **特别说明**：`scene_export_report` 写 markdown 文件到磁盘（`Operation = Analyze | Execute`，未标 `ReadOnly`），但仍标了 `SkillMode.SemiAuto`，Approval 模式可直接执行。
 - **本模块不含 Delete / PlayMode / Reload / RiskLevel=high 类 skill** —— 没有 `IsForbiddenInSemi` 拦截。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `perception_analyze`, `perception_scan`, and `perception_describe` do not exist
 - `scene_context` is not `editor_get_context`: it exports hierarchy/components/references, while editor context focuses on current editor state
 - `scene_analyze`, `scene_health_check`, `scene_contract_validate`, `scene_component_stats`, `scene_find_hotspots`, and `project_stack_detect` belong to this module even if the prefix looks like `scene_*` or `project_*`
 
-**Routing**:
+**Routing / Điều hướng**:
 - Current selection/play-mode/editor state -> `editor_get_context`
 - Object search by name/path -> `scene_find_objects` or `gameobject_find`
 - Script dependency closure -> `script_dependency_graph`

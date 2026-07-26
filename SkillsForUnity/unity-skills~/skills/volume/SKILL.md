@@ -1,13 +1,21 @@
 ---
 name: unity-volume
-description: Work with the SRP Volume framework — create/load VolumeProfile assets and create global/local Volume GameObjects with components. Use when setting up volumes, creating or loading a VolumeProfile, or adding global/local volumes to a scene, even if the user just says "Volume" or "体积". 使用 SRP Volume 框架(创建/加载 VolumeProfile 资产、创建全局/局部 Volume GameObject 及组件);当用户要搭建 Volume、创建或加载 VolumeProfile、或向场景添加全局/局部 Volume 时使用。
+description: "Work with the SRP Volume framework — create/load VolumeProfile assets and create global/local Volume GameObjects with components. Use when setting up volumes, creating or loading a VolumeProfile, or adding global/local volumes to a scene, even if the user just says \"Volume\" or \"体积\". 使用 SRP Volume 框架(创建/加载 VolumeProfile 资产、创建全局/局部 Volume GameObject 及组件);当用户要搭建 Volume、创建或加载 VolumeProfile、或向场景添加全局/局部 Volume 时使用。 VI: Volume/VolumeProfile: post-processing volume, component, parameter override. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Volume Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Volume/VolumeProfile: post-processing volume, component, parameter override`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Shared SRP Volume framework skills for Unity 2022.3+ — works in URP and HDRP via SRP Core.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - Query skills (`volume_list_component_types`, `volume_get_component`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - Mutating skills (`volume_profile_create`, `volume_create`, `volume_set_profile`, `volume_add_component`, `volume_set_parameter`, `volume_set_parameter_batch`) are `SkillMode.FullAuto` — under **Approval** they need user grant (grant triggers one server-side execute returning the result); under **Auto** / **Bypass** they execute directly.
@@ -17,9 +25,9 @@ Shared SRP Volume framework skills for Unity 2022.3+ — works in URP and HDRP v
 
 This module is compiled against `com.unity.render-pipelines.core` (`SRP_CORE`). When neither URP nor HDRP is installed (no SRP Core), **every** skill returns a stub `{ error: "Scriptable Render Pipeline Core package … is not installed." }` (`RenderPipelineSkillsCommon.NoSRP()`). The stub is a diagnostic payload, not a permission denial — it does **not** require grant and is **not** treated as NeverInSemi. Inspect `project_get_render_pipeline` first when you see this error.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Routing**:
+**Routing / Điều hướng**:
 - For Volume container/profile CRUD: use this module
 - For high-level modern post-processing effects like Bloom/DOF/Tonemapping: prefer `postprocess`
 

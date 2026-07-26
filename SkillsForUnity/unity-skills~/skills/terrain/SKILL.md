@@ -1,30 +1,38 @@
 ---
 name: unity-terrain
-description: Operate on Unity Terrain — create TerrainData, sculpt heights, paint texture layers, and smooth/flatten regions. Use when creating or editing terrain, sculpting or smoothing the heightmap, or painting terrain texture layers, even if the user just says "地形" or "刷地面". 操作 Unity Terrain(创建 TerrainData、雕刻高度、绘制纹理层、平滑/压平区域);当用户要创建或编辑地形、雕刻或平滑高度图、或绘制地形纹理层时使用。
+description: "Operate on Unity Terrain — create TerrainData, sculpt heights, paint texture layers, and smooth/flatten regions. Use when creating or editing terrain, sculpting or smoothing the heightmap, or painting terrain texture layers, even if the user just says \"地形\" or \"刷地面\". 操作 Unity Terrain(创建 TerrainData、雕刻高度、绘制纹理层、平滑/压平区域);当用户要创建或编辑地形、雕刻或平滑高度图、或绘制地形纹理层时使用。 VI: terrain/địa hình: tạo terrain, paint height, texture, tree, detail, holes. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Terrain Skills
 
-## Guardrails
+## Ghi chú tiếng Việt cho agent
 
-**Operating Mode** (v1.9 three-tier):
+- Khi user nói tiếng Việt như: `terrain/địa hình: tạo terrain, paint height, texture, tree, detail, holes`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+## Guardrails / Rào chắn
+
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query skills (`terrain_get_info`, `terrain_get_height`) run directly. Create/modify skills (`terrain_create`, `terrain_set_height`, `terrain_set_heights_batch`, `terrain_add_hill`, `terrain_generate_perlin`, `terrain_smooth`, `terrain_flatten`, `terrain_paint_texture`) are FullAuto — on `MODE_RESTRICTED`, run the grant protocol; `/permission/grant` executes the skill server-side and returns the result.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - This module contains **no** Delete / PlayMode / Reload / `RiskLevel="high"` skills — nothing auto-classifies as forbidden. To remove a terrain delete the asset via `asset_delete` (subject to its own forbidden rules).
 
 > **Note**: All sculpt/paint operations require an existing Terrain in the scene, or use `terrain_create` to generate one.
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `terrain_set_texture` does not exist → use `terrain_paint_texture` with layer index and brush parameters
 - `terrain_add_tree` / `terrain_add_grass` do not exist → these require Unity Terrain tools or custom scripts
 - `terrain_set_size` does not exist → terrain dimensions are set at creation via `terrain_create`
 - `terrain_import_heightmap` / `terrain_set_heights` do not exist → use `terrain_set_heights_batch` with a 2D heights array (`[z][x]` values 0-1)
 
-**Routing**:
+**Routing / Điều hướng**:
 - For terrain material → use `material` module on terrain's material
 - For objects on terrain → use `gameobject` module to create/place objects
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Skill | Description |
 |-------|-------------|
@@ -55,7 +63,7 @@ Create a new Terrain GameObject with TerrainData asset.
 | `heightmapResolution` | int | No | 513 | Heightmap resolution (power of 2 + 1) |
 | `x`, `y`, `z` | float | No | 0 | Position |
 
-**Returns**: `{success, name, instanceId, terrainDataPath, size, position}`
+**Returns / Trả về**: `{success, name, instanceId, terrainDataPath, size, position}`
 
 ### terrain_get_info
 Get terrain information.
@@ -67,7 +75,7 @@ Get terrain information.
 
 *If neither provided, uses first terrain in scene
 
-**Returns**: `{success, name, instanceId, position, size, heightmapResolution, alphamapResolution, detailResolution, terrainLayerCount, layers}`
+**Returns / Trả về**: `{success, name, instanceId, position, size, heightmapResolution, alphamapResolution, detailResolution, terrainLayerCount, layers}`
 
 ### terrain_get_height
 Get terrain height at world position.
@@ -78,7 +86,7 @@ Get terrain height at world position.
 | `worldZ` | float | Yes | World Z coordinate |
 | `name` | string | No | Terrain name |
 
-**Returns**: `{success, worldX, worldZ, height, worldY}`
+**Returns / Trả về**: `{success, worldX, worldZ, height, worldY}`
 
 ### terrain_set_height
 Set height at normalized coordinates.
@@ -91,7 +99,7 @@ Set height at normalized coordinates.
 | `name` | string | No | Terrain name |
 | `instanceId` | int | No | Terrain instance ID |
 
-**Returns**: `{success, normalizedX, normalizedZ, height, pixelX, pixelZ}`
+**Returns / Trả về**: `{success, normalizedX, normalizedZ, height, pixelX, pixelZ}`
 
 ### terrain_set_heights_batch
 ⚠️ **BATCH SKILL**: Set heights in rectangular region.
@@ -104,7 +112,7 @@ Set height at normalized coordinates.
 | `name` | string | No | Terrain name |
 | `instanceId` | int | No | Terrain instance ID |
 
-**Returns**: `{success, startX, startZ, modifiedWidth, modifiedLength, totalPointsModified}`
+**Returns / Trả về**: `{success, startX, startZ, modifiedWidth, modifiedLength, totalPointsModified}`
 
 ```python
 # Example: Create a 10x10 hill
@@ -125,7 +133,7 @@ call_skill("terrain_set_heights_batch", startX=50, startZ=50, heights=heights)
 | `name` | string | No | null | Terrain name |
 | `instanceId` | int | No | 0 | Terrain instance ID |
 
-**Returns**: `{success, centerX, centerZ, radius, height, affectedArea}`
+**Returns / Trả về**: `{success, centerX, centerZ, radius, height, affectedArea}`
 
 ```python
 # Add a large smooth hill at center
@@ -155,7 +163,7 @@ for i in range(5):
 | `seed` | int | No | 0 | Random seed (0 = random) |
 | `name` | string | No | null | Terrain name |
 
-**Returns**: `{success, resolution, scale, heightMultiplier, octaves, persistence, lacunarity, seed}`
+**Returns / Trả về**: `{success, resolution, scale, heightMultiplier, octaves, persistence, lacunarity, seed}`
 
 ```python
 # Generate rolling hills
@@ -183,7 +191,7 @@ call_skill("terrain_generate_perlin",
 | `name` | string | No | null | Terrain name |
 | `instanceId` | int | No | 0 | Terrain instance ID |
 
-**Returns**: `{success, centerX, centerZ, radius, iterations, affectedArea}`
+**Returns / Trả về**: `{success, centerX, centerZ, radius, iterations, affectedArea}`
 
 ```python
 # Smooth a specific area
@@ -205,7 +213,7 @@ call_skill("terrain_smooth",
 | `name` | string | No | null | Terrain name |
 | `instanceId` | int | No | 0 | Terrain instance ID |
 
-**Returns**: `{success, centerX, centerZ, targetHeight, radius, strength}`
+**Returns / Trả về**: `{success, centerX, centerZ, targetHeight, radius, strength}`
 
 ```python
 # Create a flat plateau
@@ -227,7 +235,7 @@ Paint terrain texture layer. Requires terrain layers already configured.
 | `name` | string | No | null | Terrain name |
 | `instanceId` | int | No | 0 | Terrain instance ID |
 
-**Returns**: `{success, layerIndex, layerName, centerX, centerZ, brushSize, strength}`
+**Returns / Trả về**: `{success, layerIndex, layerName, centerX, centerZ, brushSize, strength}`
 
 ---
 
@@ -303,7 +311,7 @@ info = unity_skills.call_skill("terrain_get_height", worldX=100, worldZ=100)
 print(f"Height at position: {info['height']}")
 ```
 
-## Workflow Integration
+## Workflow / Quy trình Integration
 
 All terrain operations support workflow undo/redo:
 

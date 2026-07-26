@@ -1,21 +1,29 @@
 ---
 name: unity-graphics
-description: Manage project-wide GraphicsSettings and QualitySettings for SRP — read and edit render pipeline assets, quality tiers, and graphics tier settings. Use when configuring project graphics/quality settings, assigning an SRP asset, or adjusting quality levels, even if the user just says "画质设置" or "渲染管线配置". 管理面向 SRP 的工程级 GraphicsSettings 与 QualitySettings(读取与编辑渲染管线资产、质量档位、图形层级设置);当用户要配置工程图形/画质设置、指定 SRP 资产或调整质量等级时使用。
+description: "Manage project-wide GraphicsSettings and QualitySettings for SRP — read and edit render pipeline assets, quality tiers, and graphics tier settings. Use when configuring project graphics/quality settings, assigning an SRP asset, or adjusting quality levels, even if the user just says \"画质设置\" or \"渲染管线配置\". 管理面向 SRP 的工程级 GraphicsSettings 与 QualitySettings(读取与编辑渲染管线资产、质量档位、图形层级设置);当用户要配置工程图形/画质设置、指定 SRP 资产或调整质量等级时使用。 VI: graphics settings: QualitySettings, GraphicsSettings, render pipeline asset, SRP. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Graphics Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `graphics settings: QualitySettings, GraphicsSettings, render pipeline asset, SRP`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Project-wide graphics and quality settings (GraphicsSettings + QualitySettings) for Unity 2022.3+. Works in Built-in, URP and HDRP — does not depend on any SRP package being installed.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - Query skills (`graphics_get_overview`, `graphics_get_quality_settings`, `graphics_get_render_pipeline_assets`, `graphics_list_always_included_shaders`, `graphics_get_shader_stripping`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - Mutating skills (`graphics_set_quality_level`, `graphics_set_default_render_pipeline`, `graphics_set_quality_render_pipeline`, `graphics_add_always_included_shader`, `graphics_remove_always_included_shader`, `graphics_set_shader_stripping`) are `SkillMode.FullAuto` — under **Approval** they need user grant (grant triggers one server-side execute returning the result); under **Auto** / **Bypass** they execute directly.
 - This module contains **no** Delete / PlayMode / Reload / high-risk skills (no NeverInSemi). `graphics_remove_always_included_shader` is a list mutation, not a `SkillOperation.Delete`.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Routing**:
+**Routing / Điều hướng**:
 - For current render pipeline detection only: `project_get_render_pipeline`
 - For SRP/quality configuration: use this module, not `project_*`
 

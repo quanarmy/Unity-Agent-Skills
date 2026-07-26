@@ -1,31 +1,39 @@
 ---
 name: unity-probuilder
-description: Model editable meshes with ProBuilder for blockout — create and edit ProBuilder meshes, faces, and vertices for level greyboxing. Use when blocking out levels, building or editing ProBuilder geometry, or prototyping shapes in-editor, even if the user just says "灰盒" or "白模". 用 ProBuilder 进行可编辑网格建模做 blockout(创建与编辑 ProBuilder 网格、面、顶点,用于关卡灰盒);当用户要搭建关卡灰盒、创建或编辑 ProBuilder 几何体、或在编辑器内快速搭形时使用。
+description: "Model editable meshes with ProBuilder for blockout — create and edit ProBuilder meshes, faces, and vertices for level greyboxing. Use when blocking out levels, building or editing ProBuilder geometry, or prototyping shapes in-editor, even if the user just says \"灰盒\" or \"白模\". 用 ProBuilder 进行可编辑网格建模做 blockout(创建与编辑 ProBuilder 网格、面、顶点,用于关卡灰盒);当用户要搭建关卡灰盒、创建或编辑 ProBuilder 几何体、或在编辑器内快速搭形时使用。 VI: ProBuilder mesh: shape, face/edge/vertex, extrude, combine, UV, pivot. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity ProBuilder Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `ProBuilder mesh: shape, face/edge/vertex, extrude, combine, UV, pivot`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Use this module for editable ProBuilder meshes, not regular primitive GameObjects. It is best for blockout, level geometry, and procedural mesh refinement.
 
 > **Requires**: `com.unity.probuilder` package.
 > **Batch-first**: For scene blockout or level generation, prefer `probuilder_create_batch` when creating `2+` shapes.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query skills (e.g. `probuilder_get_info`, `probuilder_get_vertices`) run directly. Create/modify skills are FullAuto — call once, get `MODE_RESTRICTED`, run the grant protocol; a successful `/permission/grant` executes the skill server-side and returns the result in the same response.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - Auto-forbidden in this module: `probuilder_combine_meshes` (`SkillOperation.Modify | Delete`, the `Delete` bit triggers NeverInSemi). It is callable only under Bypass mode or after the user adds it to the Allowlist; the grant flow returns `MODE_FORBIDDEN`. Note `probuilder_delete_faces` is `Operation = SkillOperation.Modify` only and remains grantable under Approval/Auto.
 - When `com.unity.probuilder` is missing, every skill returns a package-missing diagnostic instead of executing.
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `probuilder_create_mesh` does not exist -> use `probuilder_create_shape`
 - `probuilder_edit_face` does not exist -> use the specific face skills such as `probuilder_extrude_faces`, `probuilder_delete_faces`, `probuilder_merge_faces`
 - `probuilder_set_material` and `probuilder_set_face_material` are different -> whole object vs selected faces
 - Regular meshes do not become ProBuilder meshes automatically
 - Mesh rebuild calls (`ToMesh()` + `Refresh()`) are already handled by the skills. Do not invent a manual rebuild step
 
-**Routing**:
+**Routing / Điều hướng**:
 - For ordinary primitive objects without editable topology -> use `gameobject_create`
 - For material asset creation or shader work -> use `material`
 - For large blockout generation -> combine this module with `material` and `light`, but keep geometry creation here

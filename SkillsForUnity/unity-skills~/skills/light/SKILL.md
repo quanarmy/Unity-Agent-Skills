@@ -1,35 +1,43 @@
 ---
 name: unity-light
-description: Create and configure Unity lights — Directional/Point/Spot/Area lights and batch-toggling scene lights. Use when adding or tuning lights, setting up scene lighting, or batch-enabling/disabling lights, even if the user just says "加个灯" or "打光". 创建与配置 Unity 灯光(Directional/Point/Spot/Area 灯光、批量开关场景灯光);当用户要添加或调校灯光、布置场景照明、或批量启用/禁用灯光时使用。
+description: "Create and configure Unity lights — Directional/Point/Spot/Area lights and batch-toggling scene lights. Use when adding or tuning lights, setting up scene lighting, or batch-enabling/disabling lights, even if the user just says \"加个灯\" or \"打光\". 创建与配置 Unity 灯光(Directional/Point/Spot/Area 灯光、批量开关场景灯光);当用户要添加或调校灯光、布置场景照明、或批量启用/禁用灯光时使用。 VI: ánh sáng: tạo light, chỉnh intensity, color, shadow, light probe, reflection probe, lightmap. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Light Skills
 
-> **BATCH-FIRST**: Use `*_batch` skills when operating on 2+ lights.
+## Ghi chú tiếng Việt cho agent
 
-## Operating Mode
+- Khi user nói tiếng Việt như: `ánh sáng: tạo light, chỉnh intensity, color, shadow, light probe, reflection probe, lightmap`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `*_batch` skills when operating on 2+ lights.
+
+## Operating Mode / Chế độ quyền
 
 - **Approval** (default): mutating skills (`light_create`, `light_set_properties`, `light_set_properties_batch`, `light_set_enabled`, `light_set_enabled_batch`, `light_add_probe_group`, `light_add_reflection_probe`) need user grant; grant triggers a single server-side execution that returns the result.
 - **Auto / Bypass**: those skills execute directly.
 - Query skills (`light_get_info`, `light_find_all`, `light_get_lightmap_settings`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - This module contains **no** Delete / PlayMode / Reload / high-risk skills (no NeverInSemi); to remove a Light, call `gameobject_delete` from the `gameobject` module.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `light_add` does not exist → use `light_create` (creates a new light GameObject)
 - `light_set_color` / `light_set_intensity` do not exist → use `light_set_properties` (sets color, intensity, range, shadows together)
 - `light_delete` does not exist → use `gameobject_delete` on the light's GameObject
 - `light_set_shadow` does not exist → use `light_set_properties` with `shadows` parameter ("none"/"hard"/"soft")
 
-**Routing**:
+**Routing / Điều hướng**:
 - For lightmap baking settings → `light_get_lightmap_settings` (this module)
 - For reflection probes → `light_add_reflection_probe` (this module)
 - For light probe groups → `light_add_probe_group` (this module)
 
 > **Object Targeting**: All single-object skills accept `name` (string) and `instanceId` (int, preferred). Provide at least one. `path` (hierarchy path) is also accepted where noted.
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -73,7 +81,7 @@ Create a new light.
 | `spotAngle` | float | No | 30 | Cone angle (Spot only) |
 | `shadows` | string | No | "soft" | none/hard/soft |
 
-**Returns**: `{success, name, instanceId, lightType, position, color, intensity, shadows}`
+**Returns / Trả về**: `{success, name, instanceId, lightType, position, color, intensity, shadows}`
 
 ### light_set_properties
 Configure light properties.
@@ -88,7 +96,7 @@ Configure light properties.
 | `spotAngle` | float | No | Cone angle (Spot only) |
 | `shadows` | string | No | none/hard/soft |
 
-**Returns**: `{success, name, lightType, color, intensity, range, spotAngle, shadows}`
+**Returns / Trả về**: `{success, name, lightType, color, intensity, range, spotAngle, shadows}`
 
 ### light_set_properties_batch
 Configure multiple lights. Each item accepts: `name`/`instanceId`/`path` (identifier) + `r`, `g`, `b`, `intensity`, `range`, `shadows` (all optional).
@@ -96,8 +104,7 @@ Configure multiple lights. Each item accepts: `name`/`instanceId`/`path` (identi
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name}]}`
 
 ```python
 unity_skills.call_skill("light_set_properties_batch", items=[
@@ -122,8 +129,7 @@ Enable or disable multiple lights.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, name, enabled}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, name, enabled}]}`
 
 ```python
 unity_skills.call_skill("light_set_enabled_batch", items=[
@@ -141,7 +147,7 @@ Get detailed light information.
 | `name` | string | No* | Light object name |
 | `instanceId` | int | No* | Instance ID |
 
-**Returns**: `{name, instanceId, path, lightType, color, intensity, range, spotAngle, shadows, enabled, cullingMask, bounceIntensity}`
+**Returns / Trả về**: `{name, instanceId, path, lightType, color, intensity, range, spotAngle, shadows, enabled, cullingMask, bounceIntensity}`
 
 ### light_find_all
 Find all lights in scene.
@@ -151,7 +157,7 @@ Find all lights in scene.
 | `lightType` | string | No | null | Filter by type |
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{count, lights: [{name, instanceId, path, lightType, intensity, enabled}]}`
+**Returns / Trả về**: `{count, lights: [{name, instanceId, path, lightType, intensity, enabled}]}`
 
 ### `light_add_probe_group`
 Add a Light Probe Group to a GameObject. Optional grid layout: gridX/gridY/gridZ (count per axis), spacingX/spacingY/spacingZ (meters between probes).
@@ -168,7 +174,7 @@ Add a Light Probe Group to a GameObject. Optional grid layout: gridX/gridY/gridZ
 | `spacingY` | float | No | 1.5 | Meters between probes on Y |
 | `spacingZ` | float | No | 2 | Meters between probes on Z |
 
-**Returns:** `{ success, gameObject, probeCount, existed, hasGrid }`
+**Returns / Trả về:** `{ success, gameObject, probeCount, existed, hasGrid }`
 
 ### `light_add_reflection_probe`
 Create a Reflection Probe at a position.
@@ -180,14 +186,14 @@ Create a Reflection Probe at a position.
 | `sizeX`, `sizeY`, `sizeZ` | float | No | 10,10,10 | Probe box size |
 | `resolution` | int | No | 256 | Cubemap resolution |
 
-**Returns:** `{ success, name, instanceId, resolution, size }`
+**Returns / Trả về:** `{ success, name, instanceId, resolution, size }`
 
 ### `light_get_lightmap_settings`
 Get Lightmap baking settings.
 
 No parameters.
 
-**Returns:** `{ success, bakedGI, realtimeGI, lightmapSize, lightmapPadding, isRunning, lightmapCount }`
+**Returns / Trả về:** `{ success, bakedGI, realtimeGI, lightmapSize, lightmapPadding, isRunning, lightmapCount }`
 
 ---
 

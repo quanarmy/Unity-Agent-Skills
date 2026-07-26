@@ -1,32 +1,40 @@
 ---
 name: unity-script
-description: Create, read, and analyze C# scripts — create, read, replace, append, search, rename, move, and delete scripts, plus compile feedback. Use when authoring or editing C# code, searching across scripts, refactoring file layout, or checking compile errors, even if the user just says "写个脚本" or "改代码". 对 C# 脚本进行增删改查与分析(创建、读取、替换、追加、搜索、重命名、移动、删除脚本,以及编译反馈);当用户要编写或编辑 C# 代码、跨脚本搜索、重构文件布局、或检查编译错误时使用。
+description: "Create, read, and analyze C# scripts — create, read, replace, append, search, rename, move, and delete scripts, plus compile feedback. Use when authoring or editing C# code, searching across scripts, refactoring file layout, or checking compile errors, even if the user just says \"写个脚本\" or \"改代码\". 对 C# 脚本进行增删改查与分析(创建、读取、替换、追加、搜索、重命名、移动、删除脚本,以及编译反馈);当用户要编写或编辑 C# 代码、跨脚本搜索、重构文件布局、或检查编译错误时使用。 VI: C# script: tạo script, đọc script, sửa script, replace, append, rename, move, kiểm tra compile. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Script Skills
 
-> **BATCH-FIRST**: Use `script_create_batch` when creating 2+ scripts.
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `C# script: tạo script, đọc script, sửa script, replace, append, rename, move, kiểm tra compile`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `script_create_batch` when creating 2+ scripts.
 > **DESIGN-FIRST**: Before creating gameplay scripts, actively consider coupling, performance, and maintainability. In an existing project, load `../project-scout/SKILL.md` first. If the user is asking for architecture or refactoring advice, load `../architecture/SKILL.md` and then `../patterns/SKILL.md`, `../async/SKILL.md`, `../inspector/SKILL.md`, `../performance/SKILL.md`, `../script-roles/SKILL.md`, `../scene-contracts/SKILL.md`, `../testability/SKILL.md`, or `../scriptdesign/SKILL.md` as needed.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**: 只读类 skill（`script_read` / `script_list` / `script_find_in_file` / `script_get_info` / `script_get_compile_feedback`，标 `SkillMode.SemiAuto`）直接执行；写型 skill（`script_create` / `script_create_batch` / `script_replace` / `script_append` / `script_rename` / `script_move` / `script_delete`，默认 `SkillMode.FullAuto`）需用户 grant，grant 后服务端一步执行返结果。
 - **Auto / Bypass**: 直接执行。
 - **本模块含 Delete / Reload 类高危 skill**：`script_create` / `script_create_batch` / `script_replace` / `script_append` / `script_delete` 会触发 Domain Reload（且多标 `RiskLevel=high`），`script_delete` 同时是 Delete 操作 —— 这些 skill 在 Approval / Auto 下被 `IsForbiddenInSemi` 自动拦截，**仅 Bypass 或 Allowlist 命中可执行**。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `script_edit` / `script_update` do not exist → use `script_replace` for find-and-replace
 - `script_write` does not exist → use `script_create` (new file) or `script_replace` (modify existing)
 - `scriptName` parameter must NOT include `.cs` extension
 - Templates only accept: MonoBehaviour, ScriptableObject, Editor, EditorWindow
 
-**Routing**:
+**Routing / Điều hướng**:
 - To modify existing script content → `script_replace` (find/replace) or `script_append` (add lines)
 - To read script → `script_read`
 - To check compile errors → `script_get_compile_feedback`
 - To analyze script API → use `perception` module's `script_analyze`
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -56,14 +64,14 @@ Create a C# script from template.
 
 **Templates**: MonoBehaviour, ScriptableObject, Editor, EditorWindow
 
-**Returns**: `{success, status, path, jobId, className, namespaceName, designReminder, serverAvailability?}`
+**Returns / Trả về**: `{success, status, path, jobId, className, namespaceName, designReminder, serverAvailability?}`
 
 Poll the returned `jobId` (or call `script_get_compile_feedback`) to obtain compile diagnostics — they are not embedded in the synchronous response. `serverAvailability` carries the transient-unavailable hint when Unity is about to reload the script domain.
 
 ### script_create_batch
 Create multiple scripts in one call.
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, path, className}], compilation?}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, path, className}], compilation?}`
 
 Before batch creation, decide whether each script should be:
 - a thin `MonoBehaviour` bridge
@@ -85,7 +93,7 @@ Read script content.
 |-----------|------|----------|-------------|
 | `scriptPath` | string | Yes | Script asset path |
 
-**Returns**: `{path, lines, content}`
+**Returns / Trả về**: `{path, lines, content}`
 
 ### script_delete
 Delete a script.
@@ -94,7 +102,7 @@ Delete a script.
 |-----------|------|----------|-------------|
 | `scriptPath` | string | Yes | Script to delete |
 
-**Returns**: `{success, status, deleted, jobId, serverAvailability?}`
+**Returns / Trả về**: `{success, status, deleted, jobId, serverAvailability?}`
 
 ### script_find_in_file
 Search for patterns in scripts.
@@ -106,7 +114,7 @@ Search for patterns in scripts.
 | `isRegex` | bool | No | false | Use regex |
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{pattern, matchCount, matches: [{file, line, content}]}`
+**Returns / Trả về**: `{pattern, matchCount, matches: [{file, line, content}]}`
 
 ### script_append
 Append content to a script.
@@ -195,7 +203,7 @@ Find and replace content in a script file.
 | `checkCompile` | bool | No | true | Check compilation after replace |
 | `diagnosticLimit` | int | No | 20 | Max compile diagnostics |
 
-**Returns:** `{ success, status, path, jobId, replacements, serverAvailability? }`
+**Returns / Trả về:** `{ success, status, path, jobId, replacements, serverAvailability? }`
 
 ### `script_list`
 List C# script files in the project.
@@ -206,7 +214,7 @@ List C# script files in the project.
 | `filter` | string | No | null | Filter string for path matching |
 | `limit` | int | No | 100 | Max results |
 
-**Returns:** `{ count, scripts: [{ path, name }] }`
+**Returns / Trả về:** `{ count, scripts: [{ path, name }] }`
 
 ### `script_get_info`
 Get script info (class name, base class, methods).
@@ -215,7 +223,7 @@ Get script info (class name, base class, methods).
 |-----------|------|----------|---------|-------------|
 | `scriptPath` | string | Yes | - | Script asset path |
 
-**Returns:** `{ path, className, baseClass, namespaceName, isMonoBehaviour, publicMethods, publicFields }`
+**Returns / Trả về:** `{ path, className, baseClass, namespaceName, isMonoBehaviour, publicMethods, publicFields }`
 
 ### `script_rename`
 Rename a script file.
@@ -227,7 +235,7 @@ Rename a script file.
 | `checkCompile` | bool | No | true | Check compilation after rename |
 | `diagnosticLimit` | int | No | 20 | Max compile diagnostics |
 
-**Returns:** `{ success, status, path, jobId, oldPath, newName, serverAvailability? }`
+**Returns / Trả về:** `{ success, status, path, jobId, oldPath, newName, serverAvailability? }`
 
 ### `script_move`
 Move a script to a new folder.
@@ -239,7 +247,7 @@ Move a script to a new folder.
 | `checkCompile` | bool | No | true | Check compilation after move |
 | `diagnosticLimit` | int | No | 20 | Max compile diagnostics |
 
-**Returns:** `{ success, status, path, jobId, oldPath, newPath, serverAvailability? }`
+**Returns / Trả về:** `{ success, status, path, jobId, oldPath, newPath, serverAvailability? }`
 
 ---
 ## Exact Signatures

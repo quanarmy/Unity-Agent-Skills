@@ -1,32 +1,40 @@
 ---
 name: unity-component
-description: Manage GameObject components — add, remove, list, copy, enable/disable, and read/set component fields. Use when attaching or removing components, copying components between objects, toggling them, or reading/writing their serialized fields, even if the user just says "加个组件" or "改组件属性". 管理 GameObject 组件(添加、移除、列出、复制、启用/禁用、读写组件字段);当用户要挂载或移除组件、在对象间复制组件、开关组件或读写其序列化字段时使用。
+description: "Manage GameObject components — add, remove, list, copy, enable/disable, and read/set component fields. Use when attaching or removing components, copying components between objects, toggling them, or reading/writing their serialized fields, even if the user just says \"加个组件\" or \"改组件属性\". 管理 GameObject 组件(添加、移除、列出、复制、启用/禁用、读写组件字段);当用户要挂载或移除组件、在对象间复制组件、开关组件或读写其序列化字段时使用。 VI: component trên GameObject: thêm component, xoá component, bật tắt component, sửa property component, copy component. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Component Skills
 
-> **BATCH-FIRST**: Use `*_batch` skills when operating on 2+ objects to reduce API calls from N to 1.
+## Ghi chú tiếng Việt cho agent
 
-## Operating Mode
+- Khi user nói tiếng Việt như: `component trên GameObject: thêm component, xoá component, bật tắt component, sửa property component, copy component`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `*_batch` skills when operating on 2+ objects to reduce API calls from N to 1.
+
+## Operating Mode / Chế độ quyền
 
 - **Approval**：本模块 Mixed —— `component_list` / `component_get_properties` 标 `SkillMode.SemiAuto`，可直接执行；写类 skill (`component_add` / `component_set_property` / `component_set_enabled` / `component_copy` 等) 标 `SkillMode.FullAuto`，需 grant 单次执行返结果。
 - **Auto / Bypass**：FullAuto 直接执行。
 - **含 NeverInSemi 高危 skill**：`component_remove` / `component_remove_batch`（Operation.Delete）。这些在 Approval/Auto 下返 `MODE_FORBIDDEN`，仅 Bypass 或 Allowlist 命中可调。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `component_create` / `component_get` do not exist → use `component_add` (add) and `component_get_properties` (read)
 - `component_find` does not exist → use `component_list` to list components on an object
 - `componentType` is case-sensitive — `Rigidbody` not `rigidbody`, `BoxCollider` not `boxcollider`
 - Custom scripts need exact class name; if namespaced, use `Namespace.ClassName`
 
-**Routing**:
+**Routing / Điều hướng**:
 - To create a C# component script → use `script` module's `script_create` first, then `component_add`
 - To set multiple properties at once → use `component_set_property_batch`
 - To enable/disable a component → `component_set_enabled` (not `component_set_property`)
 
 > **Object Targeting**: All single-object skills accept `name` (string), `instanceId` (int, preferred), and `path` (string, hierarchy path). Provide at least one.
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -59,7 +67,7 @@ Add a component to a GameObject.
 
 *At least one identifier required
 
-**Returns**: `{success, gameObject, instanceId, component, fullTypeName}` (returns `{warning, gameObject, instanceId}` instead if a single-instance component already exists)
+**Returns / Trả về**: `{success, gameObject, instanceId, component, fullTypeName}` (returns `{warning, gameObject, instanceId}` instead if a single-instance component already exists)
 
 ### component_remove
 Remove a component from a GameObject.
@@ -70,7 +78,7 @@ Remove a component from a GameObject.
 | `instanceId` | int | No* | Instance ID |
 | `componentType` | string | Yes | Component type to remove |
 
-**Returns**: `{success, gameObject, removed}` (`removed` is the requested `componentType` string)
+**Returns / Trả về**: `{success, gameObject, removed}` (`removed` is the requested `componentType` string)
 
 ### component_list
 List all components on a GameObject.
@@ -80,7 +88,7 @@ List all components on a GameObject.
 | `name` | string | No* | GameObject name |
 | `instanceId` | int | No* | Instance ID |
 
-**Returns**: `{gameObject, instanceId, path, componentCount, components: [{type, fullType, enabled, keyProperties?}]}` (`keyProperties` only present when `includeProperties=true`)
+**Returns / Trả về**: `{gameObject, instanceId, path, componentCount, components: [{type, fullType, enabled, keyProperties?}]}` (`keyProperties` only present when `includeProperties=true`)
 
 ### component_set_property
 Set a component property value.
@@ -117,7 +125,7 @@ call_skill("component_set_property", name="Obj", componentType="Rigidbody", prop
            value="Interpolate")
 ```
 
-**Returns**: `{success, gameObject, component, property, valueSet, valueType}` (`valueSet` is the string form of the actual value applied; `valueType` is the resolved target type name)
+**Returns / Trả về**: `{success, gameObject, component, property, valueSet, valueType}` (`valueSet` is the string form of the actual value applied; `valueType` is the resolved target type name)
 
 ### component_get_properties
 Get all properties of a component.
@@ -128,7 +136,7 @@ Get all properties of a component.
 | `instanceId` | int | No* | Instance ID |
 | `componentType` | string | Yes | Component type |
 
-**Returns**: `{gameObject, component, fullTypeName, properties: [{name, type, fullType, value, canWrite}], fields: [{name, type, fullType, value, isSerializable}]}`
+**Returns / Trả về**: `{gameObject, component, fullTypeName, properties: [{name, type, fullType, value, canWrite}], fields: [{name, type, fullType, value, isSerializable}]}`
 
 ### component_get_serialized_properties
 List Inspector serialized properties on a component via `SerializedObject`.
@@ -142,7 +150,7 @@ List Inspector serialized properties on a component via `SerializedObject`.
 | `includeChildren` | bool | No | Include nested properties |
 | `limit` | int | No | Max properties returned |
 
-**Returns**: `{success, gameObject, component, fullTypeName, properties}`
+**Returns / Trả về**: `{success, gameObject, component, fullTypeName, properties}`
 
 ### component_set_serialized_property
 Set an Inspector serialized property by `propertyPath`.
@@ -163,7 +171,7 @@ Set an Inspector serialized property by `propertyPath`.
 
 > Provide `value` for scalar properties, or a scene/project reference for ObjectReference fields.
 
-**Returns**: `{success, gameObject, component, propertyPath, valueSet}`
+**Returns / Trả về**: `{success, gameObject, component, propertyPath, valueSet}`
 
 ---
 
@@ -175,8 +183,7 @@ Add components to multiple objects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, gameObject, componentType, added}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, gameObject, componentType, added}]}`
 
 ```python
 unity_skills.call_skill("component_add_batch", items=[
@@ -192,8 +199,7 @@ Remove components from multiple objects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, gameObject, componentType, removed}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, gameObject, componentType, removed}]}`
 
 ```python
 unity_skills.call_skill("component_remove_batch", items=[
@@ -208,8 +214,7 @@ Set properties on multiple objects.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, gameObject, componentType, property, oldValue, newValue}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, gameObject, componentType, property, oldValue, newValue}]}`
 
 ```python
 unity_skills.call_skill("component_set_property_batch", items=[
@@ -226,7 +231,7 @@ Set Inspector serialized properties on multiple components.
 
 **Item properties**: `name`, `instanceId`, `path`, `componentType`, `propertyPath`, `value`, `referenceName`, `referenceInstanceId`, `referencePath`, `assetPath`, `objectType`
 
-**Returns**: `{success, totalItems, successCount, failCount, results}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results}`
 
 ---
 
@@ -320,7 +325,7 @@ Copy a component from one GameObject to another.
 
 *At least one source identifier and one target identifier required
 
-**Returns:** `{ success, source, target, componentType }`
+**Returns / Trả về:** `{ success, source, target, componentType }`
 
 ### `component_copy_exact`
 Copy a component from one GameObject to another and verify serialized Inspector fields match.
@@ -335,7 +340,7 @@ Copy a component from one GameObject to another and verify serialized Inspector 
 | `targetPath` | string | No* | null | Target hierarchy path |
 | `componentType` | string | Yes | - | Component type to copy |
 
-**Returns:** `{ success, source, target, componentType, verified, mismatchCount, mismatches? }`
+**Returns / Trả về:** `{ success, source, target, componentType, verified, mismatchCount, mismatches? }`
 
 ### `component_set_enabled`
 Enable or disable a component (Behaviour, Renderer, Collider, etc.).
@@ -350,7 +355,7 @@ Enable or disable a component (Behaviour, Renderer, Collider, etc.).
 
 *At least one identifier required
 
-**Returns:** `{ success, gameObject, componentType, enabled }`
+**Returns / Trả về:** `{ success, gameObject, componentType, enabled }`
 
 ---
 ## Exact Signatures

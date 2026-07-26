@@ -1,30 +1,38 @@
 ---
 name: unity-validation
-description: Validate project and scene health plus cleanup — find broken references, missing scripts, and other integrity issues. Use when checking for broken or missing references, validating scene/project integrity, or cleaning up issues before a build, even if the user just says "检查引用" or "有没有丢失". 校验项目与场景健康度并清理(查找断裂引用、丢失脚本及其他完整性问题);当用户要检查断裂或丢失引用、校验场景/项目完整性、或在构建前清理问题时使用。
+description: "Validate project and scene health plus cleanup — find broken references, missing scripts, and other integrity issues. Use when checking for broken or missing references, validating scene/project integrity, or cleaning up issues before a build, even if the user just says \"检查引用\" or \"有没有丢失\". 校验项目与场景健康度并清理(查找断裂引用、丢失脚本及其他完整性问题);当用户要检查断裂或丢失引用、校验场景/项目完整性、或在构建前清理问题时使用。 VI: kiểm tra project/scene: missing scripts, broken refs, unused assets, shader errors, cleanup. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Validation Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `kiểm tra project/scene: missing scripts, broken refs, unused assets, shader errors, cleanup`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Maintain project health - find problems, clean up, and validate your Unity project.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**: 只读分析 skill（`validate_scene` / `validate_find_missing_scripts` / `validate_find_unused_assets` / `validate_texture_sizes` / `validate_project_structure` / `validate_missing_references` / `validate_mesh_collider_convex` / `validate_shader_errors`，标 `SkillMode.SemiAuto`）直接执行；含 Delete 的 skill（`validate_cleanup_empty_folders` 标 `Analyze | Delete`、`validate_fix_missing_scripts` 标 `Execute | Delete`，默认 `SkillMode.FullAuto`）需用户 grant。
 - **Auto / Bypass**: 直接执行。
 - **本模块含 Delete 类高危 skill**：`validate_cleanup_empty_folders` / `validate_fix_missing_scripts` 一旦 `dryRun=false` 即真删；它们在 Approval / Auto 下被 `IsForbiddenInSemi` 自动拦截，**仅 Bypass 或 Allowlist 命中可执行**。**强烈建议先用 `dryRun=true` 预览**。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - Validation skill routes use the `validate_*` prefix, not `validation_*`
 - `validation_run` / `validation_check` do not exist → use specific skills such as `validate_scene`, `validate_project_structure`, `validate_missing_references`
 - `validation_fix` does not exist → validation skills report issues; use other modules to fix them
 - `validation_clean` does not exist → use `cleaner` module for cleanup operations
 
-**Routing**:
+**Routing / Điều hướng**:
 - For unused/duplicate asset cleanup → use `cleaner` module
 - For missing script fix → `cleaner_fix_missing_scripts` (cleaner module)
 - For compile errors → `debug_check_compilation` (debug module)
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Skill | Description |
 |-------|-------------|
@@ -53,7 +61,7 @@ Comprehensive scene validation.
 | `checkDuplicateNames` | bool | No | true | Check duplicate names |
 | `checkEmptyGameObjects` | bool | No | false | Check empty GameObjects (no components) |
 
-**Returns**: `{scene, totalIssues, summary: {errors, warnings, info}, issues: [{type, severity, gameObject, path, message, count}]}`
+**Returns / Trả về**: `{scene, totalIssues, summary: {errors, warnings, info}, issues: [{type, severity, gameObject, path, message, count}]}`
 
 ### validate_find_missing_scripts
 Find objects with missing script references.
@@ -62,7 +70,7 @@ Find objects with missing script references.
 |-----------|------|----------|---------|-------------|
 | `searchInPrefabs` | bool | No | true | Also check prefab assets |
 
-**Returns**: `{totalFound, objects: [{source, gameObject, path, missingCount, prefabPath?}]}` (`prefabPath` only present when `source="Prefab"`)
+**Returns / Trả về**: `{totalFound, objects: [{source, gameObject, path, missingCount, prefabPath?}]}` (`prefabPath` only present when `source="Prefab"`)
 
 ### validate_fix_missing_scripts
 Remove missing script components.
@@ -71,7 +79,7 @@ Remove missing script components.
 |-----------|------|----------|---------|-------------|
 | `dryRun` | bool | No | true | Preview only, don't remove |
 
-**Returns**: `{success, dryRun, fixedCount, message, objects: [{gameObject, path, missingCount}]}`
+**Returns / Trả về**: `{success, dryRun, fixedCount, message, objects: [{gameObject, path, missingCount}]}`
 
 ### validate_cleanup_empty_folders
 Remove empty folders from project.
@@ -81,7 +89,7 @@ Remove empty folders from project.
 | `rootPath` | string | No | "Assets" | Starting folder |
 | `dryRun` | bool | No | true | Preview only, don't delete |
 
-**Returns**: `{ success, dryRun, emptyFolderCount, folders, message }`
+**Returns / Trả về**: `{ success, dryRun, emptyFolderCount, folders, message }`
 
 ### validate_find_unused_assets
 Find potentially unused assets.
@@ -91,7 +99,7 @@ Find potentially unused assets.
 | `assetType` | string | No | "Material" | Filter: Texture/Material/Prefab/etc |
 | `limit` | int | No | 100 | Max results |
 
-**Returns**: `{ success, assetType, potentiallyUnusedCount, assets }`
+**Returns / Trả về**: `{ success, assetType, potentiallyUnusedCount, assets }`
 
 ### validate_texture_sizes
 Check for oversized textures.
@@ -101,7 +109,7 @@ Check for oversized textures.
 | `maxRecommendedSize` | int | No | 2048 | Warn if larger |
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{maxRecommendedSize, largeTextureCount, textures: [{path, name, width, height, maxTextureSize, format, recommendation}]}`
+**Returns / Trả về**: `{maxRecommendedSize, largeTextureCount, textures: [{path, name, width, height, maxTextureSize, format, recommendation}]}`
 
 ### validate_project_structure
 Get project folder structure overview.
@@ -111,7 +119,7 @@ Get project folder structure overview.
 | `rootPath` | string | No | "Assets" | Starting folder |
 | `maxDepth` | int | No | 2 | Max folder depth |
 
-**Returns**: `{ success, rootPath, assetCounts, structure }`
+**Returns / Trả về**: `{ success, rootPath, assetCounts, structure }`
 
 ### `validate_missing_references`
 Find null/missing object references on components in the scene.
@@ -120,7 +128,7 @@ Find null/missing object references on components in the scene.
 |-----------|------|----------|---------|-------------|
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{ success, count, issues: [{ gameObject, path, component, property }] }`
+**Returns / Trả về**: `{ success, count, issues: [{ gameObject, path, component, property }] }`
 
 ### `validate_mesh_collider_convex`
 Find non-convex MeshColliders (potential performance issue).
@@ -129,7 +137,7 @@ Find non-convex MeshColliders (potential performance issue).
 |-----------|------|----------|---------|-------------|
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{ success, count, nonConvexColliders: [{ gameObject, path, vertexCount }] }`
+**Returns / Trả về**: `{ success, count, nonConvexColliders: [{ gameObject, path, vertexCount }] }`
 
 ### `validate_shader_errors`
 Find shaders with compilation errors.
@@ -138,7 +146,7 @@ Find shaders with compilation errors.
 |-----------|------|----------|---------|-------------|
 | `limit` | int | No | 50 | Max results |
 
-**Returns**: `{ success, count, shaders: [{ name, path, errorCount }] }`
+**Returns / Trả về**: `{ success, count, shaders: [{ name, path, errorCount }] }`
 
 ---
 

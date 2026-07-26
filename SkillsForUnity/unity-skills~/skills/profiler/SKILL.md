@@ -1,24 +1,32 @@
 ---
 name: unity-profiler
-description: Capture read-only Unity runtime performance snapshots — sample frame timing, memory, and runtime stats without mutating anything. Use when checking runtime performance, taking a profiler snapshot, or inspecting memory/frame stats, even if the user just says "性能数据" or "看看帧率". 采集只读的 Unity 运行时性能快照(采样帧耗时、内存、运行时统计,不做任何改动);当用户要查看运行时性能、抓取 profiler 快照、或检查内存/帧率统计时使用。
+description: "Capture read-only Unity runtime performance snapshots — sample frame timing, memory, and runtime stats without mutating anything. Use when checking runtime performance, taking a profiler snapshot, or inspecting memory/frame stats, even if the user just says \"性能数据\" or \"看看帧率\". 采集只读的 Unity 运行时性能快照(采样帧耗时、内存、运行时统计,不做任何改动);当用户要查看运行时性能、抓取 profiler 快照、或检查内存/帧率统计时使用。 VI: profiler/performance stats: frame time, memory, render stats, profiler info. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Profiler Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `profiler/performance stats: frame time, memory, render stats, profiler info`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Get performance statistics.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval / Auto / Bypass**: 所有 skill 直接执行。本模块**全部**标 `ReadOnly = true, Mode = SkillMode.SemiAuto`，三档模式下都不需要 grant。
 - **本模块不含 Delete / PlayMode / Reload / RiskLevel=high 类 skill** —— 没有 `IsForbiddenInSemi` 拦截。
 - 注：本组 skill 仅做"瞬时快照"读取，不是 Profiler 录制控制；持续采样请用 Unity Profiler 窗口。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `profiler_start` / `profiler_stop` do not exist → profiler skills are read-only snapshots, not recording controls
 - `profiler_record` does not exist → use Unity Profiler window for recording
 - `profiler_analyze` / `profiler_get_fps` do not exist → use `profiler_get_stats` (FPS, batches, draw calls) or `profiler_get_memory` (heap sizes)
 
-**Routing**:
+**Routing / Điều hướng**:
 - For scene performance hints → use `perception` module's `scene_performance_hints`
 - For memory info → `debug_get_memory_info` (debug module) or `profiler_get_memory` (this module)
 - For optimization suggestions → use `optimization` module
@@ -27,9 +35,9 @@ Get performance statistics.
 
 ### `profiler_get_stats`
 Get performance statistics (FPS, Memory, Batches).
-**Parameters:** None.
+**Parameters / Tham số:** None.
 
-**Returns:**
+**Returns / Trả về:**
 ```json
 {
   "fps": 60.0,
@@ -41,9 +49,9 @@ Get performance statistics (FPS, Memory, Batches).
 
 ### `profiler_get_memory`
 Get memory usage overview (total allocated, reserved, mono heap).
-**Parameters:** None.
+**Parameters / Tham số:** None.
 
-**Returns:** `{ success, totalAllocatedMB, totalReservedMB, unusedReservedMB, monoHeapMB, monoUsedMB }`
+**Returns / Trả về:** `{ success, totalAllocatedMB, totalReservedMB, unusedReservedMB, monoHeapMB, monoUsedMB }`
 
 ### `profiler_get_runtime_memory`
 Get top N objects by runtime memory usage in the scene.
@@ -52,7 +60,7 @@ Get top N objects by runtime memory usage in the scene.
 |-----------|------|----------|---------|-------------|
 | limit | int | No | 20 | Maximum number of objects to return |
 
-**Returns:** `{ success, totalTrackedMB, showing, objects: [{ name, type, sizeKB }] }`
+**Returns / Trả về:** `{ success, totalTrackedMB, showing, objects: [{ name, type, sizeKB }] }`
 
 ### `profiler_get_texture_memory`
 Get memory usage of all loaded textures.
@@ -61,7 +69,7 @@ Get memory usage of all loaded textures.
 |-----------|------|----------|---------|-------------|
 | limit | int | No | 50 | Maximum number of textures to return |
 
-**Returns:** `{ success, totalCount, totalMB, topTextures: [{ name, type, sizeKB, width, height }] }`
+**Returns / Trả về:** `{ success, totalCount, totalMB, topTextures: [{ name, type, sizeKB, width, height }] }`
 
 ### `profiler_get_mesh_memory`
 Get memory usage of all loaded meshes.
@@ -70,7 +78,7 @@ Get memory usage of all loaded meshes.
 |-----------|------|----------|---------|-------------|
 | limit | int | No | 50 | Maximum number of meshes to return |
 
-**Returns:** `{ success, totalCount, totalMB, topMeshes: [{ name, sizeKB, vertices, triangles }] }`
+**Returns / Trả về:** `{ success, totalCount, totalMB, topMeshes: [{ name, sizeKB, vertices, triangles }] }`
 
 ### `profiler_get_material_memory`
 Get memory usage of all loaded materials.
@@ -79,7 +87,7 @@ Get memory usage of all loaded materials.
 |-----------|------|----------|---------|-------------|
 | limit | int | No | 50 | Maximum number of materials to return |
 
-**Returns:** `{ success, totalCount, totalMB, topMaterials: [{ name, shader, sizeKB }] }`
+**Returns / Trả về:** `{ success, totalCount, totalMB, topMaterials: [{ name, shader, sizeKB }] }`
 
 ### `profiler_get_audio_memory`
 Get memory usage of all loaded AudioClips.
@@ -88,7 +96,7 @@ Get memory usage of all loaded AudioClips.
 |-----------|------|----------|---------|-------------|
 | limit | int | No | 50 | Maximum number of clips to return |
 
-**Returns:** `{ success, totalCount, totalMB, topClips: [{ name, sizeKB, length, channels, frequency }] }`
+**Returns / Trả về:** `{ success, totalCount, totalMB, topClips: [{ name, sizeKB, length, channels, frequency }] }`
 
 ### `profiler_get_object_count`
 Count all loaded objects grouped by type.
@@ -97,19 +105,19 @@ Count all loaded objects grouped by type.
 |-----------|------|----------|---------|-------------|
 | topN | int | No | 20 | Number of top types to return |
 
-**Returns:** `{ success, totalObjects, topTypes: [{ type, count }] }`
+**Returns / Trả về:** `{ success, totalObjects, topTypes: [{ type, count }] }`
 
 ### `profiler_get_rendering_stats`
 Get rendering statistics (batches, triangles, vertices, etc.).
-**Parameters:** None.
+**Parameters / Tham số:** None.
 
-**Returns:** `{ success, frameTime, renderTime, triangles, vertices, batches, setPassCalls, drawCalls, dynamicBatchedDrawCalls, staticBatchedDrawCalls, instancedBatchedDrawCalls, shadowCasters }`
+**Returns / Trả về:** `{ success, frameTime, renderTime, triangles, vertices, batches, setPassCalls, drawCalls, dynamicBatchedDrawCalls, staticBatchedDrawCalls, instancedBatchedDrawCalls, shadowCasters }`
 
 ### `profiler_get_asset_bundle_stats`
 Get information about all loaded AssetBundles.
-**Parameters:** None.
+**Parameters / Tham số:** None.
 
-**Returns:** `{ success, count, bundles: [{ name, isStreamedSceneAssetBundle }] }`
+**Returns / Trả về:** `{ success, count, bundles: [{ name, isStreamedSceneAssetBundle }] }`
 
 ## Exact Signatures
 

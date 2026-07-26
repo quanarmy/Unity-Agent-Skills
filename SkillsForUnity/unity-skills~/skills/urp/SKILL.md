@@ -1,13 +1,21 @@
 ---
 name: unity-urp
-description: Manage the Universal Render Pipeline (URP) — URP assets, the renderer, and renderer features. Use when configuring the URP asset, adding or editing renderer features, or adjusting URP rendering settings, even if the user just says "URP配置" or "渲染特性". 管理通用渲染管线(URP:URP 资产、渲染器、渲染器特性);当用户要配置 URP 资产、添加或编辑渲染器特性、或调整 URP 渲染设置时使用。
+description: "Manage the Universal Render Pipeline (URP) — URP assets, the renderer, and renderer features. Use when configuring the URP asset, adding or editing renderer features, or adjusting URP rendering settings, even if the user just says \"URP配置\" or \"渲染特性\". 管理通用渲染管线(URP:URP 资产、渲染器、渲染器特性);当用户要配置 URP 资产、添加或编辑渲染器特性、或调整 URP 渲染设置时使用。 VI: URP asset/renderer: renderer feature, pipeline asset, renderer data, render scale. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # URP Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `URP asset/renderer: renderer feature, pipeline asset, renderer data, render scale`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 URP-specific asset and renderer feature management for Unity 2022.3+ (URP 14 and Unity 6 / URP 17).
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - Query skills (`urp_get_info`, `urp_list_renderers`, `urp_list_renderer_features`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - Mutating skills (`urp_set_asset_settings`, `urp_add_renderer_feature`, `urp_set_renderer_feature_active`) are `SkillMode.FullAuto` — under **Approval** they need user grant (grant triggers one server-side execute returning the result); under **Auto** / **Bypass** they execute directly.
@@ -17,9 +25,9 @@ URP-specific asset and renderer feature management for Unity 2022.3+ (URP 14 and
 
 This module is compiled against `com.unity.render-pipelines.universal` (`URP`). When URP is not installed, **every** skill returns a stub `{ error: "Universal Render Pipeline package … is not installed." }` (`RenderPipelineSkillsCommon.NoURP()`). The stub is a diagnostic payload, not a permission denial — it does **not** require grant and is **not** treated as NeverInSemi. Call `project_get_render_pipeline` first when you see this error.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**DO NOT**:
+**DO NOT / Không gọi nhầm**:
 - Use this module for ShaderGraph
 - Assume arbitrary custom renderer features are safe to instantiate
 - Assume Unity 2022 and Unity 6 expose the same built-in renderer features

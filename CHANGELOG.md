@@ -2,6 +2,16 @@
 
 All notable changes to **UnitySkills** will be documented in this file.
 
+## [2.2.2] - 2026-07-26
+
+### Added
+
+- **Skill 文档越南语路由层** — 全部 71 个模块 SKILL.md（含新增的 primetween / primetween-design）的 frontmatter description 追加逐模块定制的越南语触发关键词（`VI: …`，非模板复制），正文新增《Ghi chú tiếng Việt cho agent》引导块：REST 模块提示 dryRun 预演、Operating Mode/授权检查与 BATCH-FIRST；advisory 模块标注"仅设计文档、无 REST skill"。根 SKILL.md 与模块索引各新增"越南语关键词 → 模块"路由表，主要小节标题（Operating Mode / DO NOT / Routing / Skills Overview / Returns）双语化。路由原则：读越南语理解意图，调用仍走原始 skill 名/参数/endpoint/JSON shape。全部文档经脚本审计：YAML frontmatter 合法、description 均低于 1024 字符上限、advisory/REST 模板分派零错配。
+
+### Changed
+
+- **版本号更新** — `SkillsLogger.Version` / `package.json` / Python helper `__version__` / `agent.md` / README 当前版本标记同步提升到 `2.2.2`。
+
 ## [2.2.1] - 2026-07-20
 
 > **工作流核心重构（issue #49）** —— 修复大工作流下的性能崩溃，重做快照/撤销体系，并让设置类操作真正可回退。技能总数 738 → 740（运行时口径）。

@@ -1,28 +1,36 @@
 ---
 name: unity-ui
-description: Create and lay out Unity UGUI (Canvas-based UI) — Canvas, panels, buttons, text, images, and layout groups. Use when building UGUI screens, adding Canvas elements, or arranging UI layout, even if the user just says "做个UI" or "界面". 创建与布局 Unity UGUI(基于 Canvas 的 UI:Canvas、面板、按钮、文本、图片、布局组);当用户要搭建 UGUI 界面、添加 Canvas 元素、或排布 UI 布局时使用。
+description: "Create and lay out Unity UGUI (Canvas-based UI) — Canvas, panels, buttons, text, images, and layout groups. Use when building UGUI screens, adding Canvas elements, or arranging UI layout, even if the user just says \"做个UI\" or \"界面\". 创建与布局 Unity UGUI(基于 Canvas 的 UI:Canvas、面板、按钮、文本、图片、布局组);当用户要搭建 UGUI 界面、添加 Canvas 元素、或排布 UI 布局时使用。 VI: UGUI Canvas/UI: tạo canvas, button, text, image, input, layout, anchors. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity UI Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `UGUI Canvas/UI: tạo canvas, button, text, image, input, layout, anchors`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Use this module for Unity UGUI / Canvas workflows. It is separate from UI Toolkit.
 
 > **Batch-first**: Prefer `ui_create_batch` when creating `2+` UI elements.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**：查询类 skill（`ui_find_all`，源码标 `SkillMode.SemiAuto`）直接执行；其余创建/修改类（`ui_create_*` / `ui_set_*` / `ui_add_*` / `ui_layout_children` / `ui_align_selected` 等，标 `SkillMode.FullAuto`）需用户 grant，grant 后服务端一步执行返结果。
 - **Auto / Bypass**：所有 skill 直接执行；Auto 走 AI 自我评估，Bypass 全放行。
 - 本模块**不含** Delete / PlayMode / Reload / 高危 skill，无 Bypass-only 拦截项。删除 UI 节点请走 `gameobject` 模块。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `ui_add_canvas` does not exist -> use `ui_create_canvas`
 - `ui_create_label` does not exist -> use `ui_create_text`
 - `ui_create_checkbox` does not exist -> use `ui_create_toggle`
 - `ui_set_color` does not exist -> use `component_set_property` on `Image`/`Text`, or the dedicated UI property skills when available
 - Do not confuse UGUI (`ui`) with UI Toolkit (`uitoolkit`)
 
-**Routing**:
+**Routing / Điều hướng**:
 - For UXML/USS/UIDocument -> use `uitoolkit`
 - For XR-compatible world-space Canvas conversion -> use `xr_setup_ui_canvas`
 - For text updates after creation -> use `ui_set_text`
@@ -117,7 +125,7 @@ Get full RectTransform data for a UI element.
 | `instanceId` | int | No* | 0 | GameObject instance ID |
 | `path` | string | No* | null | Hierarchy path |
 
-**Returns:** `{ success, name, instanceId, path, anchorMin, anchorMax, pivot, anchoredPosition3D, sizeDelta, offsetMin, offsetMax, localPosition, localEulerAngles, localScale, rect }`
+**Returns / Trả về:** `{ success, name, instanceId, path, anchorMin, anchorMax, pivot, anchoredPosition3D, sizeDelta, offsetMin, offsetMax, localPosition, localEulerAngles, localScale, rect }`
 
 ### ui_set_rect_transform
 Set full RectTransform data for a UI element.
@@ -139,7 +147,7 @@ Set full RectTransform data for a UI element.
 | `localScaleX` / `localScaleY` / `localScaleZ` | float | No | null | Local scale |
 | `width` / `height` | float | No | null | Size with current anchors |
 
-**Returns:** same shape as `ui_get_rect_transform`.
+**Returns / Trả về:** same shape as `ui_get_rect_transform`.
 
 ### ui_set_rect_transform_batch
 Set full RectTransform data for multiple UI elements.
@@ -148,7 +156,7 @@ Set full RectTransform data for multiple UI elements.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item target and RectTransform fields |
 
-**Returns:** `{ success, totalItems, successCount, failCount, results }`
+**Returns / Trả về:** `{ success, totalItems, successCount, failCount, results }`
 
 ### Layout and Anchoring Rules
 
@@ -169,7 +177,7 @@ Text creation auto-detects TMP:
 
 Read the response payload if you need to know which one was created before later component-specific edits.
 
-## Workflow Notes
+## Workflow / Quy trình Notes
 
 1. Create a Canvas first.
 2. Use panels to group related controls.

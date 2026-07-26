@@ -1,9 +1,15 @@
 ---
 name: unity-dotween-design
-description: Source-anchored design rules for DOTween 1.3.015 (Unity 2018+) — tween/sequence basics, ease curves, shortcuts, lifetime binding, callbacks, safe mode, and integration with UniTask/Addressables. Use when writing or reviewing DOTween animation code, building sequences, binding tween lifetime to objects, or debugging tween pitfalls, even if the user just says "补间" or "做个动画". 为 DOTween 1.3.015(Unity 2018+)提供源码锚定的设计规则(补间/序列基础、缓动曲线、快捷方法、生命周期绑定、回调、安全模式、与 UniTask/Addressables 集成);当用户要编写或审查 DOTween 动画代码、构建序列动画、绑定补间生命周期或排查补间陷阱时使用。
+description: "Source-anchored design rules for DOTween 1.3.015 (Unity 2018+) — tween/sequence basics, ease curves, shortcuts, lifetime binding, callbacks, safe mode, and integration with UniTask/Addressables. Use when writing or reviewing DOTween animation code, building sequences, binding tween lifetime to objects, or debugging tween pitfalls, even if the user just says \"补间\" or \"做个动画\". 为 DOTween 1.3.015(Unity 2018+)提供源码锚定的设计规则(补间/序列基础、缓动曲线、快捷方法、生命周期绑定、回调、安全模式、与 UniTask/Addressables 集成);当用户要编写或审查 DOTween 动画代码、构建序列动画、绑定补间生命周期或排查补间陷阱时使用。 VI: thiết kế DOTween: tween, sequence, ease, lifetime, SetLink, UniTask integration. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # DOTween - Design Rules
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `thiết kế DOTween: tween, sequence, ease, lifetime, SetLink, UniTask integration`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Advisory module. Every rule is distilled from Demigiant DOTween source at:
 - **1.3.015** — bundled in `_DOTween.Assembly/DOTween/` and `bin/Modules/` module files (Unity 2018+)

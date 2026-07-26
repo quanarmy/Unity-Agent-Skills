@@ -1,25 +1,33 @@
 ---
 name: unity-xr
-description: Set up XR Interaction Toolkit (XRI) for VR/AR — XR rigs and grab/socket/ray interactors. Use when building VR/AR interaction, setting up an XR rig, or configuring grab/socket/ray interactors, even if the user just says "VR" or "XR交互". 搭建用于 VR/AR 的 XR Interaction Toolkit(XRI:XR rig、抓取/插槽/射线交互器);当用户要构建 VR/AR 交互、搭建 XR rig、或配置抓取/插槽/射线交互器时使用。
+description: "Set up XR Interaction Toolkit (XRI) for VR/AR — XR rigs and grab/socket/ray interactors. Use when building VR/AR interaction, setting up an XR rig, or configuring grab/socket/ray interactors, even if the user just says \"VR\" or \"XR交互\". 搭建用于 VR/AR 的 XR Interaction Toolkit(XRI:XR rig、抓取/插槽/射线交互器);当用户要构建 VR/AR 交互、搭建 XR rig、或配置抓取/插槽/射线交互器时使用。 VI: XR/XRI: XR rig, controller, interactor, socket, locomotion, input actions. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity XR Interaction Toolkit Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `XR/XRI: XR rig, controller, interactor, socket, locomotion, input actions`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Use this module for XR Interaction Toolkit setup and configuration. All `xr_*` skills are reflection-based and support XRI 2.x on Unity 2022 and XRI 3.x on Unity 6+.
 
 > **Requires**: `com.unity.xr.interaction.toolkit`.
 > **Hard rule**: Read this file before the first `xr_*` call in a session. Wrong property names can fail silently because the bridge is reflection-based.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**Operating Mode** (v1.9 three-tier):
+**Operating Mode / Chế độ quyền** (v1.9 three-tier):
 - **Approval** (default): query/list/info skills (`xr_check_setup`, `xr_get_scene_report`, `xr_list_interactors`, `xr_list_interactables`) run directly. Create/modify skills are FullAuto — on `MODE_RESTRICTED`, run the grant protocol; a successful `/permission/grant` executes the skill server-side and returns the result in the same response.
 - **Auto** / **Bypass**: SemiAuto and FullAuto run directly.
 - This module contains **no** Delete / PlayMode / Reload / `RiskLevel="high"` skills, so nothing is auto-classified as forbidden — every skill is reachable via grant.
 - When `com.unity.xr.interaction.toolkit` is missing, every `xr_*` skill returns the `NoXRI()` install instruction instead of executing.
 - **Reflection-sensitive**: property names on XRI components must match XRI 2.x/3.x exactly. A wrong field name on `xr_configure_interactable` / `xr_configure_haptics` / `xr_configure_interaction_layers` is silently ignored. Load `API_REFERENCE.md` before issuing detailed property edits.
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `XRHand`, `XRPlayer`, `XRTeleporter`, `GrabInteractor`, `VRController`, `XRLocomotion`, and `XRManager` are not the runtime classes you want here
 - `interactable.OnGrab()` / `OnRelease()` are not the XRI event model -> use `selectEntered` / `selectExited`
 - `controller.vibrate()` is not the documented route here -> configure haptics through `xr_configure_haptics`
@@ -44,7 +52,7 @@ Use this module for XR Interaction Toolkit setup and configuration. All `xr_*` s
 - `XRUIInputModule`
 - `TrackedPoseDriver`
 
-**Routing**:
+**Routing / Điều hướng**:
 - For non-XR Canvas UI creation -> use `ui`
 - For architecture or lifecycle decisions in XR gameplay code -> load advisory modules such as `architecture`, `patterns`, `async`, or `scriptdesign`
 - For exact component property names and full workflow examples -> load `API_REFERENCE.md`
@@ -107,7 +115,7 @@ u.call_skill("xr_setup_turn_provider", turnType="Snap", turnAmount=45)
 u.call_skill("xr_add_grab_interactable", name="MyCube", movementType="VelocityTracking")
 ```
 
-## Workflow Summary
+## Workflow / Quy trình Summary
 
 ### Rig Setup
 

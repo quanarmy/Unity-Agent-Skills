@@ -1,30 +1,38 @@
 ---
 name: unity-asset
-description: Manage the Unity AssetDatabase — import, delete, move/rename, duplicate, find, get info, and create assets. Use when organizing project assets, importing or relocating files, querying asset metadata, or scripting AssetDatabase operations, even if the user just says "资源" or "资产". 管理 Unity AssetDatabase(导入、删除、移动/重命名、复制、查找、获取信息、创建资源);当用户要整理工程资源、导入或移动文件、查询资源元数据时使用。
+description: "Manage the Unity AssetDatabase — import, delete, move/rename, duplicate, find, get info, and create assets. Use when organizing project assets, importing or relocating files, querying asset metadata, or scripting AssetDatabase operations, even if the user just says \"资源\" or \"资产\". 管理 Unity AssetDatabase(导入、删除、移动/重命名、复制、查找、获取信息、创建资源);当用户要整理工程资源、导入或移动文件、查询资源元数据时使用。 VI: asset/project file: import file, xoá asset, move/rename, duplicate, find, labels, folder, refresh. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Asset Skills
 
-> **BATCH-FIRST**: Use `*_batch` skills when operating on 2+ assets.
+## Ghi chú tiếng Việt cho agent
 
-## Operating Mode
+- Khi user nói tiếng Việt như: `asset/project file: import file, xoá asset, move/rename, duplicate, find, labels, folder, refresh`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+> **BATCH-FIRST / Ưu tiên batch**: Use `*_batch` skills when operating on 2+ assets.
+
+## Operating Mode / Chế độ quyền
 
 - **Approval**：本模块 Mixed —— `asset_find` / `asset_get_info` / `asset_get_labels` 标 `SkillMode.SemiAuto`，可直接执行；写类 skill (`asset_move` / `asset_move_batch` / `asset_duplicate` / `asset_create_folder` / `asset_refresh` / `asset_reimport*` / `asset_set_labels`) 走默认 `SkillMode.FullAuto`，需 grant。
 - **Auto / Bypass**：FullAuto 直接执行。
 - **含 NeverInSemi 高危 skill**：`asset_import` (标 `RiskLevel = "high"` —— 写入项目)；`asset_delete` / `asset_delete_batch` (Operation.Delete)。这些在 Approval/Auto 下返 `MODE_FORBIDDEN`，仅 Bypass 或 Allowlist 命中可调。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `asset_create` does not exist → use `asset_create_folder` (folders), `material_create` (materials), `script_create` (scripts)
 - `asset_rename` does not exist → use `asset_move` with new path
 - `asset_search` does not exist → use `asset_find` with searchFilter syntax (e.g. `t:Texture2D player`)
 - `asset_copy` does not exist → use `asset_duplicate`
 
-**Routing**:
+**Routing / Điều hướng**:
 - For texture/model/audio import settings → use `importer` module (SkillMode.FullAuto)
 - For material creation → use `material` module (SkillMode.FullAuto)
 - For script creation → use `script` module
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Single Object | Batch Version | Use Batch When |
 |---------------|---------------|----------------|
@@ -59,10 +67,9 @@ Import multiple external files.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
 `items` currently expects a JSON string, not a native array.
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, sourcePath, destinationPath}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, sourcePath, destinationPath}]}`
 
 ```python
 import json
@@ -86,10 +93,9 @@ Delete multiple assets.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
 `items` currently expects a JSON string, not a native array.
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, path}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, path}]}`
 
 ```python
 import json
@@ -114,10 +120,9 @@ Move multiple assets.
 |-----------|------|----------|---------|-------------|
 | `items` | json string | Yes | - | JSON array of per-item objects (see example below) |
 
-
 `items` currently expects a JSON string, not a native array.
 
-**Returns**: `{success, totalItems, successCount, failCount, results: [{success, sourcePath, destinationPath}]}`
+**Returns / Trả về**: `{success, totalItems, successCount, failCount, results: [{success, sourcePath, destinationPath}]}`
 
 ```python
 import json
@@ -151,7 +156,7 @@ Find assets by search filter.
 | `name` | `player` | By name |
 | Combined | `t:Material player` | Multiple filters |
 
-**Returns**: `{count, totalFound, assets: [{path, name, type}]}`
+**Returns / Trả về**: `{count, totalFound, assets: [{path, name, type}]}`
 
 ### asset_create_folder
 Create a folder in the project.
@@ -196,7 +201,7 @@ Set labels on an asset (overwrites existing labels).
 | `assetPath` | string | Yes | Asset path |
 | `labels` | string | Yes | Comma-separated labels (e.g. `"ui,icon,hud"`). Empty entries are dropped |
 
-**Returns**: `{success, assetPath, labels: [...]}`
+**Returns / Trả về**: `{success, assetPath, labels: [...]}`
 
 ### asset_get_labels
 Get the labels currently attached to an asset.
@@ -205,7 +210,7 @@ Get the labels currently attached to an asset.
 |-----------|------|----------|-------------|
 | `assetPath` | string | Yes | Asset path |
 
-**Returns**: `{success, assetPath, labels: [...]}`
+**Returns / Trả về**: `{success, assetPath, labels: [...]}`
 
 ---
 

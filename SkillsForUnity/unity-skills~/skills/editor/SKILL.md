@@ -1,32 +1,40 @@
 ---
 name: unity-editor
-description: Control and observe the Unity Editor — read persistent scene/file changes, enter/exit/pause play mode, select objects, undo/redo, and execute menu items. Use after the user edited Unity while the AI was away, when file watching reports changes, or when driving Editor state. 控制并观察 Unity 编辑器(读取持久化场景/文件变更、进入/退出/暂停 play mode、选中对象、撤销/重做、执行菜单项);当用户在 AI 离开期间修改了 Unity、文件监控发现变化、或需要操控编辑器状态时使用。
+description: "Control and observe the Unity Editor — read persistent scene/file changes, enter/exit/pause play mode, select objects, undo/redo, and execute menu items. Use after the user edited Unity while the AI was away, when file watching reports changes, or when driving Editor state. 控制并观察 Unity 编辑器(读取持久化场景/文件变更、进入/退出/暂停 play mode、选中对象、撤销/重做、执行菜单项);当用户在 AI 离开期间修改了 Unity、文件监控发现变化、或需要操控编辑器状态时使用。 VI: Unity Editor: play/stop/pause, select, undo/redo, menu item, change journal, tags/layers. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Editor Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `Unity Editor: play/stop/pause, select, undo/redo, menu item, change journal, tags/layers`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Observe and control the Unity Editor without parsing scene YAML.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**：本模块 Mixed —— `editor_get_changes` / `editor_get_selection` / `editor_get_context` / `editor_get_state` / `editor_get_tags` / `editor_get_layers` 标 `SkillMode.SemiAuto`，可直接执行；其余 `editor_select` / `editor_undo` / `editor_redo` / `editor_execute_menu` 默认 FullAuto，Approval 模式下需 grant。
 - **Auto / Bypass**：FullAuto 直接执行。
 - **含 NeverInSemi 高危 skill**：`editor_play` / `editor_play_capture` / `editor_stop` / `editor_pause`（标 `MayEnterPlayMode = true`）。这些在 Approval/Auto 下返 `MODE_FORBIDDEN`，仅 Bypass 或 Allowlist 命中可调。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `editor_run` does not exist → use `editor_play` to enter play mode
 - `editor_compile` / `editor_recompile` do not exist → use `debug_force_recompile`
 - `editor_save` does not exist → use `editor_execute_menu` with menuPath `"File/Save"`
 - `editor_execute_menu` requires exact menu path — typos cause silent failure
 
-**Routing**:
+**Routing / Điều hướng**:
 - For compilation check → use `debug` module's `debug_check_compilation`
 - For console errors → use `debug` module's `debug_get_errors`
 - For scene save → `scene_save` (scene module) or `editor_execute_menu` menuPath="File/Save"
 - When file watching reports changes, or the AI resumes after the user edited Unity → call `editor_get_changes` before reading `.unity` YAML
 - If `editor_get_changes.dropped=true` → its 500-entry retention window was exceeded; rebuild context with `scene_context` / `scene_diff`
 
-## Skills Overview
+## Skills Overview / Tổng quan skill
 
 | Skill | Description |
 |-------|-------------|
@@ -53,7 +61,7 @@ Observe and control the Unity Editor without parsing scene YAML.
 ### editor_play
 Enter play mode. Warning: any unsaved scene changes made during Play mode will be lost when exiting.
 
-**Returns**: `{success, mode, jobId}` — `mode="playing"`, `jobId` returned from `AsyncJobService` so callers can poll `entering_play_mode` completion.
+**Returns / Trả về**: `{success, mode, jobId}` — `mode="playing"`, `jobId` returned from `AsyncJobService` so callers can poll `entering_play_mode` completion.
 
 ### editor_play_capture
 Enter Play Mode, observe errors for `durationSeconds` (default 10, range 1–300), optionally capture the Game View, then exit. Returns a Job whose result includes `healthy`, error aggregates, `stoppedEarly`, and `screenshotPath`.
@@ -61,12 +69,12 @@ Enter Play Mode, observe errors for `durationSeconds` (default 10, range 1–300
 ### editor_stop
 Exit play mode.
 
-**Returns**: `{success, mode}` — `mode="stopped"`.
+**Returns / Trả về**: `{success, mode}` — `mode="stopped"`.
 
 ### editor_pause
 Toggle pause state.
 
-**Returns**: `{success, paused}` — `paused` is the new boolean state.
+**Returns / Trả về**: `{success, paused}` — `paused` is the new boolean state.
 
 ### editor_select
 Select a GameObject.
@@ -82,7 +90,7 @@ Select a GameObject.
 ### editor_get_selection
 Get currently selected objects.
 
-**Returns**: `{count, objects: [{name, instanceId}]}`
+**Returns / Trả về**: `{count, objects: [{name, instanceId}]}`
 
 ### editor_get_context
 Get full editor context including selection, assets, and scene info.
@@ -92,7 +100,7 @@ Get full editor context including selection, assets, and scene info.
 | `includeComponents` | bool | No | false | Include component list |
 | `includeChildren` | bool | No | false | Include children info |
 
-**Returns**:
+**Returns / Trả về**:
 - `selectedGameObjects`: Objects in Hierarchy (instanceId, path, tag, layer)
 - `selectedAssets`: Assets in Project window (GUID, path, type, isFolder)
 - `activeScene`: Current scene info (name, path, isDirty)
@@ -120,7 +128,7 @@ Redo the last undone action.
 ### editor_get_state
 Get current editor state.
 
-**Returns**: `{isPlaying, isPaused, isCompiling, timeSinceStartup, unityVersion, platform}`
+**Returns / Trả về**: `{isPlaying, isPaused, isCompiling, timeSinceStartup, unityVersion, platform}`
 
 ### editor_execute_menu
 Execute a menu command.
@@ -142,12 +150,12 @@ Execute a menu command.
 ### editor_get_tags
 Get all available tags.
 
-**Returns**: `{tags: [string]}`
+**Returns / Trả về**: `{tags: [string]}`
 
 ### editor_get_layers
 Get all available layers.
 
-**Returns**: `{layers: [{index, name}]}`
+**Returns / Trả về**: `{layers: [{index, name}]}`
 
 ### Pause On Error
 Pause-on-error is provided by the console module, not the editor module.

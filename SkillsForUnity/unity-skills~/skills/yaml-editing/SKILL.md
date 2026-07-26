@@ -1,9 +1,15 @@
 ---
 name: unity-yaml-editing
-description: Last-resort guidance for safely hand-editing Unity serialized YAML (.unity/.prefab/.asset/.meta/ProjectSettings) — reference/fileID repair, GUID safety, and merge-conflict fixes. Use when REST cannot reach the change and YAML must be hand-edited — fixing m_Script GUIDs, broken fileID references, .meta files, or merge conflicts, even if the user just says "场景文件打不开" or "引用丢了". 安全手编 Unity 序列化 YAML(.unity/.prefab/.asset/.meta/ProjectSettings)的最后手段(引用/fileID 修复、GUID 安全、合并冲突修复);当 REST 无法触达、必须手编 YAML 时使用——修复 m_Script GUID、断裂 fileID 引用、.meta 文件或合并冲突。
+description: "Last-resort guidance for safely hand-editing Unity serialized YAML (.unity/.prefab/.asset/.meta/ProjectSettings) — reference/fileID repair, GUID safety, and merge-conflict fixes. Use when REST cannot reach the change and YAML must be hand-edited — fixing m_Script GUIDs, broken fileID references, .meta files, or merge conflicts, even if the user just says \"场景文件打不开\" or \"引用丢了\". 安全手编 Unity 序列化 YAML(.unity/.prefab/.asset/.meta/ProjectSettings)的最后手段(引用/fileID 修复、GUID 安全、合并冲突修复);当 REST 无法触达、必须手编 YAML 时使用——修复 m_Script GUID、断裂 fileID 引用、.meta 文件或合并冲突。 VI: sửa YAML Unity: .unity/.prefab/.asset/.meta/ProjectSettings, GUID/fileID, merge conflict. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # YAML Editing - Safe Hand-Edit Rules
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `sửa YAML Unity: .unity/.prefab/.asset/.meta/ProjectSettings, GUID/fileID, merge conflict`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
 
 Advisory module. This is operational guidance for directly editing Unity serialized YAML text when the REST skills (and the Editor itself) cannot do the job. Hand-editing YAML is the **last resort**, not a shortcut.
 

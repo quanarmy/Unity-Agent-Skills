@@ -1,9 +1,17 @@
 ---
 name: unity-primetween
-description: Inspect PrimeTween Free, discover its public animation factories, and generate lifecycle-aware PrimeTween runtime scripts. Use when checking a PrimeTween installation, exploring supported animation APIs, or generating Transform/Sequence animation code. 检查 PrimeTween Free 安装状态、探索其公开动画工厂方法、或生成生命周期感知的 PrimeTween 运行时代码(Transform/Sequence 动画)时使用。
+description: "Inspect PrimeTween Free, discover its public animation factories, and generate lifecycle-aware PrimeTween runtime scripts. Use when checking a PrimeTween installation, exploring supported animation APIs, or generating Transform/Sequence animation code. 检查 PrimeTween Free 安装状态、探索其公开动画工厂方法、或生成生命周期感知的 PrimeTween 运行时代码(Transform/Sequence 动画)时使用。 VI: PrimeTween Free: status, config, list factories, generate tween/sequence script. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # PrimeTween Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `PrimeTween Free: status, config, list factories, generate tween/sequence script`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 PrimeTween Free support is intentionally tailored to its API rather than mirroring DOTween: it discovers static factories, reads process-wide configuration, and generates runtime scripts that own and stop their `Tween` or `Sequence` handles. It does not configure a DOTween-style settings asset or create PrimeTween Pro components.
 

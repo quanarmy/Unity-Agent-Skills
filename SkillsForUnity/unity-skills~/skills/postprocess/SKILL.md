@@ -1,13 +1,21 @@
 ---
 name: unity-postprocess
-description: Configure modern SRP post-processing on URP/HDRP VolumeProfiles — add and tune effects like bloom, tonemapping, and color grading. Use when setting up post-processing, adding effects to a VolumeProfile, or tuning the look of a URP/HDRP scene, even if the user just says "后处理" or "加个泛光". 在 URP/HDRP VolumeProfile 上配置现代 SRP 后处理(添加与调校泛光、色调映射、调色等效果);当用户要搭建后处理、向 VolumeProfile 添加效果、或调整 URP/HDRP 场景观感时使用。
+description: "Configure modern SRP post-processing on URP/HDRP VolumeProfiles — add and tune effects like bloom, tonemapping, and color grading. Use when setting up post-processing, adding effects to a VolumeProfile, or tuning the look of a URP/HDRP scene, even if the user just says \"后处理\" or \"加个泛光\". 在 URP/HDRP VolumeProfile 上配置现代 SRP 后处理(添加与调校泛光、色调映射、调色等效果);当用户要搭建后处理、向 VolumeProfile 添加效果、或调整 URP/HDRP 场景观感时使用。 VI: URP/HDRP post-processing: Bloom, Depth of Field, Tonemapping, Vignette, Color Adjustments. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # PostProcess Skills
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `URP/HDRP post-processing: Bloom, Depth of Field, Tonemapping, Vignette, Color Adjustments`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
 Modern URP / HDRP post-processing skills built on top of the SRP Volume framework. For Volume container / profile CRUD (`volume_profile_create`, `volume_create`, etc.), use the `volume` module.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - Query skills (`postprocess_list_effects`, `postprocess_get_effect`) are `SkillMode.SemiAuto` — they run in all three modes without grant.
 - Mutating skills (`postprocess_add_effect`, `postprocess_set_parameter`, `postprocess_set_bloom`, `postprocess_set_depth_of_field`, `postprocess_set_tonemapping`, `postprocess_set_vignette`, `postprocess_set_color_adjustments`) are `SkillMode.FullAuto` — under **Approval** they need user grant (grant triggers one server-side execute returning the result); under **Auto** / **Bypass** they execute directly.
@@ -17,9 +25,9 @@ Modern URP / HDRP post-processing skills built on top of the SRP Volume framewor
 
 This module is compiled against `com.unity.render-pipelines.core` (`SRP_CORE`). When neither URP nor HDRP is installed (no SRP Core), **every** skill returns a stub `{ error: "Scriptable Render Pipeline Core package … is not installed." }` (`RenderPipelineSkillsCommon.NoSRP()`). The stub is a diagnostic payload, not a permission denial — it does **not** require grant and is **not** treated as NeverInSemi.
 
-## Guardrails
+## Guardrails / Rào chắn
 
-**DO NOT**:
+**DO NOT / Không gọi nhầm**:
 - Use this module for PPv2 / `com.unity.postprocessing`
 - Use this module for general Volume container/profile management; use `volume`
 

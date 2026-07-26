@@ -1,13 +1,19 @@
 ---
 name: unity-patterns
-description: Advises on choosing Unity design patterns — ScriptableObject, event systems, state machines, object pooling, observer, and more. Use when deciding which pattern fits a problem, structuring decoupled systems, or choosing between event/state-machine/pool approaches, even if the user just asks "用什么模式" or "该用状态机吗". 为选择 Unity 设计模式提供建议(ScriptableObject、事件系统、状态机、对象池、观察者等);当用户要判断哪种模式适合某问题、构建解耦系统、或在事件/状态机/对象池方案间抉择时使用。
+description: "Advises on choosing Unity design patterns — ScriptableObject, event systems, state machines, object pooling, observer, and more. Use when deciding which pattern fits a problem, structuring decoupled systems, or choosing between event/state-machine/pool approaches, even if the user just asks \"用什么模式\" or \"该用状态机吗\". 为选择 Unity 设计模式提供建议(ScriptableObject、事件系统、状态机、对象池、观察者等);当用户要判断哪种模式适合某问题、构建解耦系统、或在事件/状态机/对象池方案间抉择时使用。 VI: pattern Unity: event, state machine, object pool, observer, ScriptableObject pattern. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Pattern Selector
 
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `pattern Unity: event, state machine, object pool, observer, ScriptableObject pattern`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Module này là advisory/design docs, không có REST skill trực tiếp; dùng để định hướng trước khi viết/sửa code Unity.
+
 Use this skill to decide whether a pattern is justified. Do not recommend every pattern at once.
 
-## Guardrails
+## Guardrails / Rào chắn
 
 > **Mode**: Documentation only — no REST skills to gate; load freely under any operating mode (Approval / Auto / Bypass).
 
@@ -69,7 +75,7 @@ The Pattern Guide above answers "which pattern?". For most non-trivial design de
 
 If one option is obviously bounded (N ≤ 10, state changes once per session, or the code runs once at startup), a single paragraph "we picked X because it's simplest" is enough. Decision Lab is for choices that will outlive the current task.
 
-## Output Format
+## Output Format / Định dạng trả lời
 
 - Recommended pattern(s)
 - Why they fit this case

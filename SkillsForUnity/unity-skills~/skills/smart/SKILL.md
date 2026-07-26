@@ -1,22 +1,30 @@
 ---
 name: unity-smart
-description: AI-powered scene operations — SQL-like and spatial object queries plus automatic layout and auto-binding. Use when querying scene objects by condition or proximity, auto-arranging objects, or auto-wiring references, even if the user just says "找出所有…的物体" or "自动排列". AI 驱动的场景操作(类 SQL 与空间对象查询、自动布局、自动绑定);当用户要按条件或邻近关系查询场景对象、自动排布对象、或自动连线引用时使用。
+description: "AI-powered scene operations — SQL-like and spatial object queries plus automatic layout and auto-binding. Use when querying scene objects by condition or proximity, auto-arranging objects, or auto-wiring references, even if the user just says \"找出所有…的物体\" or \"自动排列\". AI 驱动的场景操作(类 SQL 与空间对象查询、自动布局、自动绑定);当用户要按条件或邻近关系查询场景对象、自动排布对象、或自动连线引用时使用。 VI: smart automation: query scene, spatial query, auto layout, auto bind, snap to ground/grid. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity Smart Skills
 
-## Operating Mode
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `smart automation: query scene, spatial query, auto layout, auto bind, snap to ground/grid`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
+
+## Operating Mode / Chế độ quyền
 
 - **Approval**：本模块 Mixed —— 只读查询 skill `smart_scene_query` / `smart_scene_query_spatial`（标 `ReadOnly = true`, `Mode = SkillMode.SemiAuto`）可直接执行；其余布局/绑定/变换类 skill (`smart_scene_layout` / `smart_reference_bind` / `smart_align_to_ground` / `smart_distribute` / `smart_snap_to_grid` / `smart_randomize_transform` / `smart_select_by_component`) 为 `SkillMode.FullAuto`，需用户 grant 单次执行返结果。
 - **Auto / Bypass**：直接执行。
 - **含 NeverInSemi 高危 skill**：`smart_replace_objects`（Operation.Modify|Delete，会替换并删除原对象）。该 skill 在 Approval/Auto 下返 `MODE_FORBIDDEN`，仅 Bypass 或 Allowlist 命中可调。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `smart_create` / `smart_build` do not exist → smart skills are query/layout tools, not creation tools
 - `smart_search` / `smart_query` do not exist → use `smart_scene_query` (component property filters) or `smart_scene_query_spatial` (spatial region filters)
 - `smart_move` does not exist → use `smart_snap_to_grid` or `smart_align_to_ground`
 
-**Routing**:
+**Routing / Điều hướng**:
 - For creating objects → use `gameobject` module
 - For simple object search → use `gameobject_find` or `scene_find_objects`
 - For complex scene queries (SQL-like) → `smart_scene_query` (this module)
@@ -95,7 +103,7 @@ Find objects within a sphere/box region, optionally filtered by component.
 | `componentFilter` | string | No | null | Only include objects with this component |
 | `limit` | int | No | 50 | Max results |
 
-**Returns:** `{ success, count, center, radius, results }`
+**Returns / Trả về:** `{ success, count, center, radius, results }`
 
 ---
 
@@ -107,7 +115,7 @@ Raycast selected objects downward to align them to the ground. Requires objects 
 | `maxDistance` | float | No | 100 | Maximum raycast distance |
 | `alignRotation` | bool | No | false | Align rotation to surface normal |
 
-**Returns:** `{ success, aligned, total }`
+**Returns / Trả về:** `{ success, aligned, total }`
 
 ---
 
@@ -118,7 +126,7 @@ Evenly distribute selected objects between first and last positions. Requires at
 |-----------|------|----------|---------|-------------|
 | `axis` | string | No | "X" | X, Y, Z, -X, -Y, -Z |
 
-**Returns:** `{ success, distributed, axis }`
+**Returns / Trả về:** `{ success, distributed, axis }`
 
 ---
 
@@ -129,7 +137,7 @@ Snap selected objects to a grid.
 |-----------|------|----------|---------|-------------|
 | `gridSize` | float | No | 1 | Grid cell size |
 
-**Returns:** `{ success, snapped, gridSize }`
+**Returns / Trả về:** `{ success, snapped, gridSize }`
 
 ---
 
@@ -143,7 +151,7 @@ Randomize position/rotation/scale of selected objects within ranges.
 | `scaleMin` | float | No | 1 | Minimum uniform scale |
 | `scaleMax` | float | No | 1 | Maximum uniform scale |
 
-**Returns:** `{ success, randomized }`
+**Returns / Trả về:** `{ success, randomized }`
 
 ---
 
@@ -154,7 +162,7 @@ Replace selected objects with a prefab (preserving transforms). Requires objects
 |-----------|------|----------|---------|-------------|
 | `prefabPath` | string | Yes | - | Asset path to the replacement prefab |
 
-**Returns:** `{ success, replaced, prefab }`
+**Returns / Trả về:** `{ success, replaced, prefab }`
 
 ---
 
@@ -165,7 +173,7 @@ Select all objects that have a specific component.
 |-----------|------|----------|---------|-------------|
 | `componentName` | string | Yes | - | Component type name to search for |
 
-**Returns:** `{ success, selected, component }`
+**Returns / Trả về:** `{ success, selected, component }`
 
 ---
 ## Exact Signatures

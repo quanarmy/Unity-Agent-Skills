@@ -1,11 +1,34 @@
 ---
 name: unity-skills
-description: Automate the Unity Editor through a local REST API — create and edit scripts, build scenes and prefabs, manage assets/materials/lighting, run tests, and drive hundreds of Editor operations across modules. Use whenever the user wants to operate Unity from chat — create or modify GameObjects/scripts/scenes/assets, batch-edit, or run any Unity Editor automation, even if they just say "在 Unity 里…" or "操作 Unity". 通过本地 REST API 自动化 Unity 编辑器(创建与编辑脚本、搭建场景与 Prefab、管理资源/材质/灯光、运行测试,覆盖跨模块的数百项编辑器操作);当用户想从对话里操作 Unity——创建或修改 GameObject/脚本/场景/资源、批量编辑、或执行任何 Unity 编辑器自动化时使用。
+description: "Automate the Unity Editor through a local REST API — create and edit scripts, build scenes and prefabs, manage assets/materials/lighting, run tests, and drive hundreds of Editor operations across modules. Use whenever the user wants to operate Unity from chat — create or modify GameObjects/scripts/scenes/assets, batch-edit, or run any Unity Editor automation, even if they just say \"在 Unity 里…\" or \"操作 Unity\". 通过本地 REST API 自动化 Unity 编辑器(创建与编辑脚本、搭建场景与 Prefab、管理资源/材质/灯光、运行测试,覆盖跨模块的数百项编辑器操作);当用户想从对话里操作 Unity——创建或修改 GameObject/脚本/场景/资源、批量编辑、或执行任何 Unity 编辑器自动化时使用。 Vietnamese: Dùng khi user nói tiếng Việt về Unity như tạo object, sửa script, dựng scene, quản lý asset, chạy test, cài package, debug lỗi compile; vẫn route bằng tên skill/endpoint/tham số gốc."
 ---
 
 # Unity Skills
 
 Use this skill when the user wants to automate the Unity Editor through the local UnitySkills REST server.
+
+## Vietnamese Agent Routing / Điều hướng tiếng Việt
+
+Khi user trao đổi bằng tiếng Việt, vẫn dùng schema REST làm nguồn đúng tuyệt đối. Dịch ý định tiếng Việt sang module/skill, nhưng **không dịch** tên skill, tham số, endpoint, JSON shape. Luôn dùng `dryRun` trước lần gọi đầu nếu chưa nắm chắc tham số.
+
+| User nói tiếng Việt | Module nên kiểm tra |
+|---|---|
+| tạo object, tạo cube, xoá object, đổi tên object | `gameobject` |
+| thêm component, xoá component, sửa component | `component` |
+| đổi màu, material, shader, texture | `material / shader / shadergraph` |
+| ánh sáng, đèn, shadow, light probe | `light` |
+| prefab, instantiate, apply override | `prefab` |
+| asset, import file, xoá asset, move asset | `asset` |
+| script, C#, sửa code, compile lỗi | `script / debug` |
+| scene, hierarchy, load scene, save scene | `scene` |
+| UI, canvas, button, text, UXML, USS | `ui / uitoolkit` |
+| log, console, lỗi đỏ, warning | `console / debug` |
+| test, editmode, playmode, chạy kiểm thử | `test` |
+| package, UPM, cài Cinemachine | `package` |
+| hiệu năng, tối ưu, profiler | `profiler / optimization / performance` |
+| kiến trúc, refactor, pattern, testability | `architecture / scriptdesign / patterns / testability` |
+
+Quy tắc: đọc tiếng Việt để hiểu ý định; gọi API bằng schema gốc; giữ `entityId`, `assetPath`, `scriptPath`, `items`, `jobId` nguyên dạng. Với thao tác tạo/sửa/xoá/batch, kiểm tra mode/approval như phần dưới.
 
 ## Schema: pick the cheapest layer that answers your question
 
@@ -35,7 +58,7 @@ Current snapshot: `738` REST skills, `52` functional source modules, `71` module
 
 Python helper: `unity-skills/scripts/unity_skills.py`
 
-## Operating Mode (v1.9.0+)
+## Operating Mode / Chế độ quyền (v1.9.0+)
 
 Operating mode is a **server-side permission gate**, configured in the Unity panel (`Window > UnitySkills` → ⚙ Settings → Server section) and persisted in EditorPrefs per-machine. It is not an AI routing policy and **cannot** be switched via chat or REST — chat-side trigger words no longer apply.
 
@@ -138,7 +161,7 @@ Three read-only endpoints close the loop after a mutation — most useful across
 
 **`GET /analytics` — execution telemetry.** Aggregates how skills have been performing. Query `?window=1h|24h|7d|all` (default `24h`). The same local data feeds `/skills/recommend`: at least 5 valid calls are required before a high failure rate applies a bounded 1–3 point penalty; slow skills are warned but not penalized. Client/permission errors are ignored, and telemetry disabled means recommendation order remains semantic-only.
 
-## Core Rules
+## Core Rules / Quy tắc lõi
 
 1. If the user specifies a Unity version or editor line, set instance/version routing first with `unity_skills.set_unity_version(...)`.
 2. **BATCH-FIRST** — whenever the task touches `2+` objects, use the `*_batch` variant. Calling the single-object skill in a loop is N round-trips (and `2N` under Approval, since each call needs its own grant). Always look for a `*_batch` form before looping.
@@ -147,7 +170,7 @@ Three read-only endpoints close the loop after a mutation — most useful across
 5. `test_*` skills are async. They return a `jobId` and must be polled with `test_get_result(jobId)`.
 6. **Object location (Unity 6000.4+)** — on Unity 6000.4+ the legacy `instanceId` is reported as `0` and is no longer a reliable handle; locate GameObjects/components by `entityId` (the `entityId` field returned by object skills) instead. Locator priority is `entityId > instanceId > path > name`. Object skills accept a synthetic `entityId` parameter and return both `entityId` and `instanceId`; on Unity < 6000.4 the `instanceId` path still works unchanged.
 
-## Coding Reference Index
+## Coding Reference Index / Chỉ mục tham khảo code
 
 Before writing or refactoring Unity code, **load the relevant advisory module first**. These are the `20` `Documentation only` design modules (no REST skills — loadable under any mode) that pin rules to engine source and prevent hallucinated / removed APIs. Load on demand by topic, not all at once.
 

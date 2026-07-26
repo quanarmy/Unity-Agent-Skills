@@ -1,30 +1,38 @@
 ---
 name: unity-uitoolkit
-description: Build Unity UI Toolkit (UITK) UIs — create/edit USS stylesheets and UXML layouts, and configure UIDocument components. Use when authoring runtime or editor UI with UI Toolkit, writing USS/UXML, or wiring a UIDocument, even if the user just says "UITK" or "UXML". 构建 Unity UI Toolkit(UITK)界面(创建/编辑 USS 样式表与 UXML 布局、配置 UIDocument 组件);当用户要用 UI Toolkit 编写运行时或编辑器 UI、编写 USS/UXML、或接入 UIDocument 时使用。
+description: "Build Unity UI Toolkit (UITK) UIs — create/edit USS stylesheets and UXML layouts, and configure UIDocument components. Use when authoring runtime or editor UI with UI Toolkit, writing USS/UXML, or wiring a UIDocument, even if the user just says \"UITK\" or \"UXML\". 构建 Unity UI Toolkit(UITK)界面(创建/编辑 USS 样式表与 UXML 布局、配置 UIDocument 组件);当用户要用 UI Toolkit 编写运行时或编辑器 UI、编写 USS/UXML、或接入 UIDocument 时使用。 VI: UI Toolkit: UXML, USS, UIDocument, PanelSettings, EditorWindow UI Toolkit. Dùng module này khi user nói tiếng Việt về các chủ đề này."
 ---
 
 # Unity UI Toolkit Skills
+
+## Ghi chú tiếng Việt cho agent
+
+- Khi user nói tiếng Việt như: `UI Toolkit: UXML, USS, UIDocument, PanelSettings, EditorWindow UI Toolkit`, ưu tiên đọc module này.
+- Giữ nguyên tên skill, tham số, endpoint và JSON shape; chỉ dịch ý định của user sang schema gốc.
+- Trước lần execute đầu, dùng `GET /skills/recommend` hoặc `POST /skill/<name>?mode=dryRun` để xác nhận tham số.
+- Với thao tác tạo/sửa/xoá/batch, kiểm tra `Operating Mode`, grant/allowlist/confirmation trước khi chạy thật.
+- Nếu tác vụ chạm 2+ object/asset/item, tìm bản `*_batch` trước khi lặp single skill.
 
 Use this module for Unity UI Toolkit only: `UXML` for structure, `USS` for styling, `UIDocument` for scene attachment, and `PanelSettings` for runtime rendering.
 
 > **Requires Unity 2022.3+**. Do not mix this module with `ui_*` UGUI/Canvas skills.
 > **Localization**: Match visible UI text to the user's language. Chinese conversation -> Chinese labels/placeholders/button text. USS class names and CSS variables stay English.
 
-## Operating Mode
+## Operating Mode / Chế độ quyền
 
 - **Approval**：查询类 skill（`uitk_read_file` / `uitk_find_files` / `uitk_get_panel_settings` / `uitk_list_documents` / `uitk_inspect_uxml` / `uitk_list_uss_variables` / `uitk_inspect_document`，源码标 `SkillMode.SemiAuto`）直接执行；其余文件/场景写入类（`uitk_create_*` / `uitk_write_file` / `uitk_add_*` / `uitk_modify_element` 等，标 `SkillMode.FullAuto`）需用户 grant，grant 后服务端一步执行返结果。
 - **Auto / Bypass**：未被禁列表拦截的 skill 直接执行。
 - 本模块**含 Delete 类 skill**：`uitk_delete_file`、`uitk_remove_element`、`uitk_remove_uss_rule` 标记为 `SkillOperation.Delete`，被 `IsForbiddenInSemi` 静态拦截 —— 仅 **Bypass** 模式或加入 **Allowlist** 才能调用。
 - **Asset 重导行为**：所有写文件/删文件 skill 通过 `AssetDatabase.ImportAsset(path)` 对单个 USS/UXML 资产单独触发导入，**不会**调 `AssetDatabase.Refresh()` 触发全项目扫描；批量创建依次单独 Import。但 USS/UXML 是 ScriptedImporter 类型，Import 仍会重建依赖此资产的 PanelSettings/UIDocument 引用，触发 IMGUI 检查器刷新与场景视图重绘。
 
-**DO NOT** (common hallucinations):
+**DO NOT / Không gọi nhầm** (common hallucinations):
 - `uitoolkit_create_button` / `uitoolkit_create_label` do not exist -> use `uitk_add_element`
 - `uitoolkit_set_style` does not exist -> use `uitk_add_uss_rule`, `uitk_remove_uss_rule`, or `uitk_modify_element`
 - `uitoolkit_create_canvas` does not exist -> UI Toolkit uses `UIDocument`, not Canvas
 - `uitk_*` and `ui_*` are different systems. Do not mix UI Toolkit structure/styling assumptions into UGUI workflows
 - USS is **not full CSS**. `display:grid`, `box-shadow`, `calc()`, `@media`, `::before`, `z-index`, and gradients are unsupported
 
-**Routing**:
+**Routing / Điều hướng**:
 - For UGUI Canvas/Button/Text/Image -> use the `ui` module
 - For XR world-space Canvas conversion -> use `xr_setup_ui_canvas`
 - For generated starter layouts -> use `uitk_create_from_template`
@@ -136,7 +144,7 @@ Unity 6 world-space flows also need the scene-side document camera setup after c
 - Use `uitk_inspect_uxml` before complex structural edits if you did not create the file yourself.
 - `uitk_create_uxml` can auto-reference a stylesheet when `ussPath` is provided.
 
-## Workflow Notes
+## Workflow / Quy trình Notes
 
 1. Create USS/UXML first, then attach them through `uitk_create_document`.
 2. Runtime rendering needs a valid `PanelSettings` asset.
